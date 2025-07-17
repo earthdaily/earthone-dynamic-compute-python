@@ -73,7 +73,10 @@ def validate_scales(scales):
 
             # sometimes these are passed in as numpy float, int, etc.
             # so we don't have to deal with all of those potential instances,
-            # we convert those to their native python equivalent classes
+            # we convert those to their native python equivalent classes. but first,
+            # we convert them to a list so we can reassign
+            scaling = list(scaling)
+
             sc0, sc1 = scaling
             if hasattr(sc0, "dtype"):
                 scaling[0] = sc0.item()

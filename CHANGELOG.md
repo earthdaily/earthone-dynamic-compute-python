@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - Allow `numpy.dtypes` to be passed in as scales.
+- Fixed a bug where `tuple` scales resulted in an error with `numpy.dtypes`
 
 ### Changed
 
