@@ -22,7 +22,7 @@ from .graft import client as graft_client
 from .pyversions import PythonVersion
 
 API_HOST = os.getenv(
-    "API_HOST", "https://dynamic-compute.production.aws.descarteslabs.com"
+    "API_HOST", "https://dynamic-compute.appsci-production.earthone.earthdaily.com"
 )
 
 SINGLE_POINT_BUFFER_VALUE = 0.0000001

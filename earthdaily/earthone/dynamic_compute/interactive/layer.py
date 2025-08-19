@@ -285,13 +285,15 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
         Example
         -------
         >>> import earthdaily.earthone.dynamic_compute as dc
-        >>> img = spot_rgb = dc.Mosaic.from_product_bands("airbus:oneatlas:spot:v2", # doctest: +SKIP
-                                                            "red blue green", # doctest: +SKIP
-                                                            start_datetime="20210101", # doctest: +SKIP
-                                                            end_datetime="2022101",) # doctest: +SKIP
-        >>> layer = img.visualize("sample") # doctest: +SKIP
+        >>> img = dc.Mosaic.from_product_bands(
+                "usda:naip:v1",
+                "red green blue",
+                start_datetime="20210101",
+                end_datetime="20220101",
+            )
+        >>> layer = img.visualize("sample", m) # doctest: +SKIP
         >>> layer.make_url() # doctest: +SKIP
-        'https://dynamic-compute.descarteslabs.com/layers/9ec70d0e99db7f50c856c774809ae454ffd8475816e05c5c/tile/{z}/{x}/{y}?scales=%5B%5B0.0%2C+1.0%5D%5D&colormap=viridis&checkerboard=False'
+        'https://"https://dynamic-compute.appsci-production.earthone.earthdaily.com/layers/9ec70d0e99db7f50c856c774809ae454ffd8475816e05c5c/tile/{z}/{x}/{y}?scales=%5B%5B0.0%2C+1.0%5D%5D&colormap=viridis&checkerboard=False'
         """
         if not self.visible:
             # workaround for the fact that Leaflet still loads tiles from inactive layers,
