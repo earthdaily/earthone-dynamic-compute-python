@@ -144,6 +144,10 @@ def from_image_ids(*args, **kwargs):
     return None
 
 
+def convolve(*args, **kwargs):
+    return None
+
+
 class ComputeMap(dict, ABC):
     """
     A wrapper class to support operations on grafts. Proxy objects should all be
@@ -219,6 +223,7 @@ class ComputeMap(dict, ABC):
                     ("dot", dot),
                     ("filled", fill_mask),
                     ("from_image_ids", from_image_ids),
+                    ("convolve", convolve),
                 ],
                 debug=True,
             )()

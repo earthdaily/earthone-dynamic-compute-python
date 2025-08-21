@@ -384,12 +384,17 @@ def _mask_op(data, mask, **kwargs):
 
 
 def get_padding(graft):
+    pads = []
     for i in list(graft.values()):
         if isinstance(i, list):
             if i[0] in ["select_scenes", "mosaic"]:
-                pad_key = i[-1]["pad"]
+                pads.append(graft[i[-1]["pad"]])
 
-    return graft[pad_key]
+    pads = list(set(pads))
+
+    assert len(pads) == 1, "Inconsistent padding"
+
+    return pads[0]
 
 
 def _resolution_graft_x() -> dict:
@@ -1443,3 +1448,39 @@ def update_kwarg(graft: dict, node_type: str, kwarg: str, value: str) -> dict:
         new_graft.update(new_value_graft)
 
     return graft_client.compress_graft(new_graft)
+
+
+def convolve(
+    graft: dict,
+    knl: dict,
+    size_x: float | None = None,
+    size_y: float | None = None,
+    res_x: float | None = None,
+    res_y: float | None = None,
+):
+    """
+    Create a graft representing a convolution
+
+    Parameters
+    ----------
+    graft: dict
+        Dictionary representing the first covolution argument.
+    knl: dict
+        Dictionary representing the second covolution argument.
+    size_x: Optional[float]
+        Optional x size of kernel
+    size_y: Optional[float]
+        Optional y size of kernel
+    res_x: Optional[dict]
+        Optioanl graft for evaluating x resolution
+    res_y: Optional[dict]
+        Optioanl graft for evaluating y resolution
+
+    Returns
+    -------
+    convolution_graft: dict
+        Dictionry encoding the convolution of the two arguments
+    """
+    return graft_client.apply_graft(
+        "convolve", graft, knl, size_x=size_x, size_y=size_y, res_x=res_x, res_y=res_y
+    )

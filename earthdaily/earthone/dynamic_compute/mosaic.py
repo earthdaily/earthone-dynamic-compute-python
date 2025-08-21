@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import earthdaily.earthone as eo
 import ipyleaflet
+import numpy as np
 
 from .compute_map import (
     AddMixin,
@@ -26,6 +27,7 @@ from .compute_map import (
     TrueDivMixin,
     arctan,
     arctan2,
+    as_compute_map,
     pi,
     sqrt,
 )
@@ -39,9 +41,11 @@ from .operations import (
     _mask_op,
     _resolution_graft_x,
     _resolution_graft_y,
+    convolve,
     create_mosaic,
     format_bands,
     from_image_ids,
+    get_padding,
     gradient_x,
     gradient_y,
     is_op,
@@ -54,6 +58,9 @@ from .operations import (
 from .proxies import Datetime, parameter
 from .reductions import reduction
 from .serialization import BaseSerializationModel
+
+# The ground sample distance at the highest resolution.
+MIN_GSD = 0.5971642732620239
 
 
 @dataclasses.dataclass
@@ -679,6 +686,74 @@ class Mosaic(
         aspect = Mosaic(arctan2(grad_x, -grad_y)) * (180 / pi)
 
         return aspect
+
+    def convolve(
+        self,
+        kernel: np.ndarray,
+        size: tuple[float, float] | None = None,
+        pad: float | None = None,
+    ) -> Mosaic:
+        """
+        Convolve this mosaic with the kernel.
+
+        Parameters
+        ----------
+        kernel: np.ndarray
+            Kernel with which we should convolve
+        size: tuple[float, float] | None
+            Optional size of the kernel (east-west size, north-south size) in meters.
+            If absent the convolution is computed in pixel space.
+        pad: float | None
+            Optional padding value used for the new Mosaic
+        """
+
+        if not isinstance(kernel, np.ndarray):
+            raise Exception("Kernel must be a numpy array.")
+
+        if len(kernel.shape) != 2:
+            raise Exception("Kernel must be two dimensional.")
+
+        if not np.allclose(np.sum(kernel), 1):
+            print(
+                f"Warning: Kernel is not normalized to 1. Kernel sum is {np.sum(kernel)}"
+            )
+
+        if size:
+            if min(size) <= 0:
+                raise Exception("Target kernel size must be greater than 0")
+            size_x = size[0]
+            size_y = size[1]
+            res_x = _resolution_graft_x()
+            res_y = _resolution_graft_y()
+            req_pad = 1 + int(max(size) / MIN_GSD / 2)
+            if req_pad > get_padding(self):
+                print(
+                    "Warning: at high zoom levels the padding for this Mosaic may not be sufficient. "
+                    f"A padding of {req_pad} is required, but the current padding is {get_padding(self)}. "
+                    "Map renderings may have edge effects."
+                )
+        else:
+            size_x = None
+            size_y = None
+            res_x = None
+            res_y = None
+            req_pad = 1 + int(max(kernel.shape) // 2)
+            if req_pad > get_padding(self):
+                print(
+                    "Warning the kernel will extend outside the tile padding. There "
+                    "will likely be edge effects"
+                )
+
+        return Mosaic(
+            convolve(
+                dict(self),
+                as_compute_map(kernel),
+                size_x=size_x,
+                size_y=size_y,
+                res_x=res_x,
+                res_y=res_y,
+            )
+        )
 
     @classmethod
     def deserialize(cls, data: str) -> Mosaic:

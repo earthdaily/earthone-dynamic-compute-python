@@ -109,7 +109,7 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
     >>> m = dc.map # doctest: +SKIP
     >>> m
     >>> # ^ display interactive map
-    >>> spot_rgb = dc.Mosaic.from_product_bands("airbus:oneatlas:spot:v2", # doctest: +SKIP
+    >>> opt_rgb = dc.Mosaic.from_product_bands("hi_res_optical:v2", # doctest: +SKIP
                                                 "blue", # doctest: +SKIP
                                                 start_datetime="20210101", # doctest: +SKIP
                                                 end_datetime="2022101",)/ 256 # doctest: +SKIP
@@ -118,7 +118,7 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
                                                     "20230101", # doctest: +SKIP
                                                     "20230401") # doctest: +SKIP
     >>> water_mask = sigma0_vv.min(axis="images") > -20 # doctest: +SKIP
-    >>> water = spot_rgb.mask(water_mask) # doctest: +SKIP
+    >>> water = opt_rgb.mask(water_mask) # doctest: +SKIP
     >>> water_layer = water.visualize("Water", m, scales=[[0, 1]], colormap="viridis") # doctest: +SKIP
     >>> water_layer.colormap = "plasma" # doctest: +SKIP
     >>> # ^ change colormap (this will update the layer on the map)
