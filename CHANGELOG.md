@@ -4,11 +4,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## v2.0.1
+
 ### Added
 
 - Added support for convolutions.
 
-## v2.0.0b0 - [pre-release]
+## v2.0.0
 
 ### Fixed
 
