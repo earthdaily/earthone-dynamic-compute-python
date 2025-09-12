@@ -387,7 +387,7 @@ def get_padding(graft):
     pads = []
     for i in list(graft.values()):
         if isinstance(i, list):
-            if i[0] in ["select_scenes", "mosaic"]:
+            if i[0] in ["select_scenes", "mosaic", "from_image_ids"]:
                 pads.append(graft[i[-1]["pad"]])
 
     pads = list(set(pads))
