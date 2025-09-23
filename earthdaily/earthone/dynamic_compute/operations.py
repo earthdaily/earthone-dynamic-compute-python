@@ -297,7 +297,7 @@ def create_layer(
         if e.response.status_code == 403:
             raise UnauthorizedUserError(
                 "User does not have access to dynamic-compute. "
-                "If you believe this to be an error, contact dl.support@earthdaily.com"
+                "If you believe this to be an error, contact support@earthdaily.com"
             )
         else:
             raise e
@@ -799,7 +799,7 @@ def compute_aoi(
             if e.response.status_code == 403:
                 raise UnauthorizedUserError(
                     "User does not have access to dynamic-compute. "
-                    "If you believe this to be an error, contact dl.support@earthdaily.com"
+                    "If you believe this to be an error, contact support@earthdaily.com"
                 )
             else:
                 raise e
@@ -831,7 +831,7 @@ def compute_aoi(
         if e.response.status_code == 403:
             raise UnauthorizedUserError(
                 "User does not have access to dynamic-compute. "
-                "If you believe this to be an error, contact dl.support@earthdaily.com"
+                "If you believe this to be an error, contact support@earthdaily.com"
             )
         else:
             raise e
