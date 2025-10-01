@@ -1,3 +1,5 @@
+# flake8: noqa
+
 import contextlib
 import hashlib
 import json
@@ -11,14 +13,20 @@ from urllib.parse import urlencode
 
 import earthdaily.earthone as eo
 import earthdaily.earthone.dynamic_compute as dc
+import geopandas as gpd
 import ipyleaflet
 import ipywidgets as widgets
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 import requests
 import traitlets
+from earthdaily.earthone.core.vector.tiles import create_layer
+from pandas.api.types import is_numeric_dtype
 
 from ..datetime_utils import normalize_datetime_or_none
+from ..eo_utils import verify_vector_product
+from ..graft.client import apply_graft
 from ..operations import (
     API_HOST,
     UnauthorizedUserError,
@@ -36,6 +44,386 @@ class ScaleFloat(traitlets.CFloat):
         if value == "" and self.allow_none:
             return None
         return super(ScaleFloat, self).validate(obj, value)
+
+
+class VectorTileLayer(ipyleaflet.VectorTileLayer):
+    """VectorTileLayer wrapper with handling for Authentication and advanced styling.
+
+    Attributes
+    ----------
+    product_id : str
+        Vector product to display
+    vector_tile_layer_styles : dict
+        Style dictionary. For advanced styling, this will be a JS block.
+        property_coloring = traitlets.Bool()
+    property_coloring : bool
+        If True, enable coloring by property.
+    chosen_prop: str
+        Property to color by, if property_coloring is True.
+    """
+
+    colors = [
+        "#5781F6",
+        "#EC5C56",
+        "#87FA6B",
+        "#ED6F2D",
+        "#4C56F6",
+        "#EC62F8",
+        "#85FBFD",
+        "#F29D39",
+        "#F19FCA",
+        "#429697",
+        "#C49A6D",
+        "#8D3915",
+        "#8C43F5",
+        "#000C82",
+        "#D9E859",
+        "#989BF8",
+    ]
+    idx = 0
+    color = traitlets.Unicode()
+    fill_color = traitlets.Unicode()
+    radius = traitlets.Int()
+    weight = traitlets.Float()
+    fill_opacity = traitlets.Float()
+    property_coloring = traitlets.Bool()
+    chosen_prop = traitlets.Unicode()
+    colorbar = traitlets.Unicode()
+    color_min = traitlets.Float()
+    color_max = traitlets.Float()
+    prop_description = traitlets.Unicode()
+
+    fetch_options = traitlets.Dict({"credentials": "include"}).tag(sync=True, o=True)
+
+    def __init__(self, product_id, **kwargs):
+
+        # Get the layer URL from Platform
+        product_name = eo.vector.Table.get(product_id).name
+        lyr = create_layer(product_id, product_name)
+        super().__init__(name=product_name, url=lyr.url, **kwargs)
+
+        self.product_id = product_id
+        style_dict = {}
+
+        # Set some style defaults
+        if "vector_tile_layer_styles" in kwargs:
+            style_dict = list(kwargs["vector_tile_layer_styles"].values())[0]
+        elif "saved_styles" in kwargs:
+            style_dict = kwargs["saved_styles"]
+        self.color = (
+            VectorTileLayer.colors[VectorTileLayer.idx % len(VectorTileLayer.colors)]
+            if "color" not in style_dict
+            else style_dict["color"]
+        )
+        self.fill_color = (
+            self.color if "fill_color" not in style_dict else style_dict["fill_color"]
+        )
+        self.opacity = 1 if "opacity" not in style_dict else style_dict["opacity"]
+        self.weight = 1.9 if "weight" not in style_dict else style_dict["weight"]
+        self.fill_opacity = (
+            0.1 if "fill_opacity" not in style_dict else style_dict["fill_opacity"]
+        )
+        self.radius = 3 if "radius" not in style_dict else style_dict["radius"]
+
+        VectorTileLayer.idx += 1
+
+        self.observe(
+            self.reset_style,
+            names=[
+                "color",
+                "fill_color",
+                "opacity",
+                "weight",
+                "fill_opacity",
+                "radius",
+            ],
+        )
+
+        # Property coloring
+        self.df = gpd.GeoDataFrame()
+        self.property_coloring = (
+            False
+            if "property_coloring" not in style_dict
+            else style_dict["property_coloring"]
+        )
+        self.properties = [
+            col
+            for col in eo.vector.Table.get(self.product_id).columns
+            if col not in ["geometry", "uuid"]
+        ]
+        self.chosen_prop = (
+            "" if "chosen_prop" not in style_dict else style_dict["chosen_prop"]
+        )
+        self.colorbar = (
+            "jet" if "colorbar" not in style_dict else style_dict["colorbar"]
+        )
+        self.color_min = 0 if "color_min" not in style_dict else style_dict["color_min"]
+        self.color_max = 0 if "color_max" not in style_dict else style_dict["color_max"]
+        self.categories = (
+            {} if "categories" not in style_dict else style_dict["categories"]
+        )
+        self.prop_description = (
+            ""
+            if "prop_description" not in style_dict
+            else style_dict["prop_description"]
+        )
+        self.observe(
+            self._color_by_property,
+            [
+                "property_coloring",
+                "chosen_prop",
+                "colorbar",
+                "color_min",
+                "color_max",
+            ],
+        )
+
+        self.reset_style(None)
+
+    def reset_style(self, change):
+        # Create the styles as a dictionary for simple coloring
+        if self.property_coloring:
+            self._color_by_property(change)
+        else:
+            self._update_style_simple(change)
+
+    def _update_style_simple(self, change):
+        # Create the styles as a dictionary for simple coloring
+        prime_dict = {
+            "fill": "true",
+            "fillColor": f"{self.fill_color}",
+            "color": f"{self.color}",
+            "opacity": self.opacity,
+            "fillOpacity": self.fill_opacity,
+            "weight": self.weight,
+            "radius": self.radius,
+        }
+        if self.product_id.split(":")[0] == "earthdaily":
+            dl_name = ":".join(["descarteslabs"] + self.product_id.split(":")[1:])
+            self.vector_tile_layer_styles = {
+                self.product_id: prime_dict,
+                dl_name: prime_dict,
+            }
+        else:
+            self.vector_tile_layer_styles = {self.product_id: prime_dict}
+
+    def _color_by_property(self, change):
+        if not self.property_coloring:
+            self.categories = {}
+            self.chosen_prop = ""
+            self.color_min, self.color_max = 0, 0
+            self._update_style_simple(change)
+            return
+        if self.df.empty:
+            # Create a dataframe (if we haven't already) and convert the types as best as we can
+            # (so we don't have numerical data coming in as strings mainly)
+            self.df = eo.vecTable.get(
+                self.product_id, aoi=dc.map.geocontext()
+            ).collect()
+            self.df = self.df.convert_dtypes()
+            for col in self.df.columns:
+                if gpd.pd.api.types.is_datetime64_any_dtype(self.df[col]):
+                    self.df[col] = self.df[col].astype(str)
+        if not self.chosen_prop:
+            # Don't try to do anything if a property hasn't been set yet
+            return
+        # Create the JS string for styles
+        if is_numeric_dtype(self.df[self.chosen_prop]):
+            cmap = mpl.colormaps[self.colorbar]
+            thresholds = np.linspace(self.color_min, self.color_max, 100)
+            colors = [
+                mpl.colors.to_hex(
+                    cmap((v - self.color_min) / (self.color_max - self.color_min))
+                )
+                for v in thresholds
+            ]
+            js_color_stops = ",\n        ".join(
+                f"{{ threshold: {v:.6f}, color: '{c}' }}"
+                for v, c in zip(thresholds, colors)
+            )
+            if self.product_id.split(":")[0] == "earthdaily":
+                dl_name = ":".join(["descarteslabs"] + self.product_id.split(":")[1:])
+                jstyle = f"""{{
+                    "{self.product_id}": function(properties, zoom) {{
+                    var value = properties.{self.chosen_prop};
+                    var color = '#999';
+
+                    var colorStops = [
+                        {js_color_stops}
+                    ];
+
+                    for (var i = 0; i < colorStops.length - 1; i++) {{
+                        if (value >= colorStops[i].threshold && value < colorStops[i + 1].threshold) {{
+                            color = colorStops[i].color;
+                            break;
+                        }}
+                    }}
+                    if (value < colorStops[0].threshold) {{
+                        color = colorStops[0].color;
+                    }}
+                    if (value >= colorStops[colorStops.length - 1].threshold) {{
+                        color = colorStops[colorStops.length - 1].color;
+                    }}
+
+                    return {{ color: color,
+                            fill: true,
+                            fillColor: color,
+                            opacity: {self.opacity},
+                            fillOpacity: {self.fill_opacity},
+                            weight: {self.weight},
+                            radius: {self.radius} }};
+                    }},
+                    "{dl_name}": function(properties, zoom) {{
+                    var value = properties.{self.chosen_prop};
+                    var color = '#999';
+
+                    var colorStops = [
+                        {js_color_stops}
+                    ];
+
+                    for (var i = 0; i < colorStops.length - 1; i++) {{
+                        if (value >= colorStops[i].threshold && value < colorStops[i + 1].threshold) {{
+                            color = colorStops[i].color;
+                            break;
+                        }}
+                    }}
+                    if (value < colorStops[0].threshold) {{
+                        color = colorStops[0].color;
+                    }}
+                    if (value >= colorStops[colorStops.length - 1].threshold) {{
+                        color = colorStops[colorStops.length - 1].color;
+                    }}
+                    return {{ color: color,
+                            fill: true,
+                            fillColor: color,
+                            opacity: {self.opacity},
+                            fillOpacity: {self.fill_opacity},
+                            weight: {self.weight},
+                            radius: {self.radius} }};
+                }} }}"""
+            else:
+                jstyle = f"""{{"{self.product_id}": function(properties, zoom) {{
+                    var value = properties.{self.chosen_prop};
+                    var color = '#999';
+
+                    var colorStops = [
+                        {js_color_stops}
+                    ];
+
+                    for (var i = 0; i < colorStops.length - 1; i++) {{
+                        if (value >= colorStops[i].threshold && value < colorStops[i + 1].threshold) {{
+                            color = colorStops[i].color;
+                            break;
+                        }}
+                    }}
+                    if (value < colorStops[0].threshold) {{
+                        color = colorStops[0].color;
+                    }}
+                    if (value >= colorStops[colorStops.length - 1].threshold) {{
+                        color = colorStops[colorStops.length - 1].color;
+                    }}
+
+                    return {{ color: color,
+                            fill: true,
+                            fillColor: color,
+                            opacity: {self.opacity},
+                            fillOpacity: {self.fill_opacity},
+                            weight: {self.weight},
+                            radius: {self.radius} }};
+                    }} }}"""
+        else:
+            self.color_min, self.color_max = 0, 0
+            num_cats = len(self.df[self.chosen_prop].unique())
+            self.prop_description = f"String/Category data. {num_cats} unique values."
+            if change and change["name"] == "chosen_prop":
+                self._set_categories()
+            js_color_stops = ",\n        ".join(
+                f"{{ cat: '{v}', color: '{c}' }}" for v, c in self.categories.items()
+            )
+            if self.product_id.split(":")[0] == "earthdaily":
+                dl_name = ":".join(["descarteslabs"] + self.product_id.split(":")[1:])
+                jstyle = f"""{{
+                    "{self.product_id}": function(properties, zoom) {{
+                    var value = properties.{self.chosen_prop};
+                    var color = '#999';
+
+                    var colorStops = [
+                        {js_color_stops}
+                    ];
+
+                    for (var i = 0; i < colorStops.length - 1; i++) {{
+                        if (value === colorStops[i].cat) {{
+                            color = colorStops[i].color;
+                            break;
+                        }}
+                    }}
+
+                    return {{ color: color,
+                            fill: true,
+                            fillColor: color,
+                            opacity: {self.opacity},
+                            fillOpacity: {self.fill_opacity},
+                            weight: {self.weight},
+                            radius: {self.radius} }};
+                    }},
+                    "{dl_name}": function(properties, zoom) {{
+                    var value = properties.{self.chosen_prop};
+                    var color = '#999';
+
+                    var colorStops = [
+                        {js_color_stops}
+                    ];
+
+                    for (var i = 0; i < colorStops.length - 1; i++) {{
+                        if (value === colorStops[i].cat) {{
+                            color = colorStops[i].color;
+                            break;
+                        }}
+                    }}
+
+                    return {{ color: color,
+                            fill: true,
+                            fillColor: color,
+                            opacity: {self.opacity},
+                            fillOpacity: {self.fill_opacity},
+                            weight: {self.weight},
+                            radius: {self.radius} }};
+                }} }}"""
+            else:
+                jstyle = f"""{{"{self.product_id}": function(properties, zoom) {{
+                    var value = properties.{self.chosen_prop};
+                    var color = '#999';
+
+                    var colorStops = [{js_color_stops}];
+
+                    for (var i = 0; i < colorStops.length - 1; i++) {{
+                        if (value == colorStops[i].cat) {{
+                            color = colorStops[i].color;
+                            break;
+                        }}
+                    }}
+
+                    return {{ color: color,
+                            fill: true,
+                            fillColor: color,
+                            opacity: {self.opacity},
+                            fillOpacity: {self.fill_opacity},
+                            weight: {self.weight},
+                            radius: {self.radius} }};
+                    }} }}"""
+        self.vector_tile_layer_styles = jstyle
+
+    def _set_categories(self):
+        """Populate the dialog for categorical data"""
+        self.categories = {}
+        colors = self.colors
+        for i, cat in enumerate(self.df[self.chosen_prop].dropna().unique()):
+            color = colors[i % len(colors)]
+            self.categories[cat] = color
+
+    def set_category_color(self, cat, color):
+        self.categories[cat] = color
+        self.reset_style(None)
 
 
 class DynamicComputeLayer(ipyleaflet.TileLayer):
@@ -191,7 +579,7 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
             )
 
         if alpha is not None:
-            assert type(alpha) == dc.mosaic.Mosaic, "Alpha must be a Mosaic layer"
+            assert isinstance(alpha, dc.mosaic.Mosaic), "Alpha must be a Mosaic layer"
 
         if parameter_overrides is None:
             parameter_overrides = {}
@@ -664,3 +1052,133 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
             widget = param_set.widget
             if widget and len(widget.children) > 0:
                 widget._ipython_display_()
+
+
+class VectorRasterLayer(DynamicComputeLayer):
+    """
+    Subclass of ``DynamicComputeLayer`` for displaying a dynamic compute
+    `Mosaic` that is derived from a vector product.
+
+    Attributes
+    ----------
+    product_id: str
+        The product ID of the vector product to use.
+    drawprop: str
+        The property of the vector product to use for drawing.
+    """
+
+    drawprop = traitlets.Unicode(None, allow_none=True)
+
+    def __init__(
+        self,
+        product_id,
+        drawprop,
+        scales=None,
+        method="IDW",
+        colormap=None,
+        checkerboard=None,
+        log_level=logging.DEBUG,
+        **kwargs,
+    ):
+        self._url_updates_blocked = False
+        self.product_id = product_id
+        self.drawprop = drawprop
+        verify_vector_product(self.product_id, self.drawprop)
+        imagery = apply_graft(method, product_id=product_id, drawprop=drawprop)
+        super(DynamicComputeLayer, self).__init__(**kwargs)
+        with self.hold_url_updates():
+            self.set_scales(scales, new_colormap=colormap)
+            self.checkerboard = checkerboard
+            self.log_level = log_level
+            self.parameters = {}
+            self.set_imagery(imagery, **self.parameters)
+            self.set_trait("session_id", uuid.uuid4().hex)
+            self.set_trait(
+                "autoscale_progress",
+                ClearableOutput(
+                    widgets.Output(),
+                    layout=widgets.Layout(max_height="10rem", flex="1 0 auto"),
+                ),
+            )
+
+        self._log_listener = None
+        self._known_logs = set()
+        self._known_logs_lock = threading.Lock()
+
+    def make_url(self):
+        """
+        Generate the URL for this layer.
+
+        This is called automatically as the attributes (`imagery`, `colormap`, scales, etc.) are changed.
+
+        Example
+        -------
+        >>> import earthdaily.earthone.dynamic_compute as dc
+        >>> img = dc.Mosaic.from_product_bands(
+                "usda:naip:v1",
+                "red green blue",
+                start_datetime="20210101",
+                end_datetime="20220101",
+            )
+        >>> layer = img.visualize("sample", m) # doctest: +SKIP
+        >>> layer.make_url() # doctest: +SKIP
+        'https://"https://dynamic-compute.appsci-production.earthone.earthdaily.com/layers/9ec70d0e99db7f50c856c774809ae454ffd8475816e05c5c/tile/{z}/{x}/{y}?scales=%5B%5B0.0%2C+1.0%5D%5D&colormap=viridis&checkerboard=False'
+        """
+        if not self.visible:
+            # workaround for the fact that Leaflet still loads tiles from inactive layers,
+            # which is expensive computation users don't want
+            return ""
+
+        if self.colormap is not None:
+            scales = [[self.r_min, self.r_max]]
+        else:
+            scales = [
+                [self.r_min, self.r_max],
+                [self.g_min, self.g_max],
+                [self.b_min, self.b_max],
+            ]
+
+        scales = [scale for scale in scales if scale != [None, None]]
+
+        # Make the layer cacheable
+        set_cache_id(self.imagery)
+
+        # Create a layer from the graft
+        response = requests.post(
+            f"{API_HOST}/layers/",
+            headers={"Authorization": eo.auth.Auth.get_default_auth().token},
+            json={
+                "graft": self.imagery,
+                "python_version": _python_major_minor_version,
+                "dynamic_compute_version": version(
+                    "earthdaily-earthone-dynamic-compute"
+                ),
+            },
+        )
+        try:
+            response.raise_for_status()
+        except Exception as e:
+            if e.response.status_code == 403:
+                raise UnauthorizedUserError(
+                    "User does not have access to dynamic-compute. "
+                    "If you believe this to be an error, contact support@earthdaily.com"
+                )
+            else:
+                raise e
+
+        layer_id = json.loads(response.content.decode("utf-8"))["layer_id"]
+        self.set_trait("layer_id", layer_id)
+        # URL encode query parameters
+        params = {}
+        params["python_version"] = _python_major_minor_version
+        params["drawprop"] = self.drawprop
+        if scales is not None:
+            params["scales"] = json.dumps(scales)
+        if self.colormap is not None:
+            params["colormap"] = self.colormap
+
+        query_params = urlencode(params)
+
+        # Construct a URL to request tiles with
+        url = f"{API_HOST}/layers/{self.layer_id}/rasterize/{{z}}/{{x}}/{{y}}?{query_params}"
+        return url

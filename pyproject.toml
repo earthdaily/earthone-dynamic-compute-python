@@ -35,7 +35,7 @@ imagecodecs = [
     {version = ">=2023.7.4", python = ">=3.12"}
 ]
 matplotlib = ">3.6"
-earthdaily-earthone = "^5.0.0b2"
+earthdaily-earthone = "^5.0.0"
 
 
 [build-system]

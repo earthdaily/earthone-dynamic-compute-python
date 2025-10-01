@@ -4,6 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Added a new layer type `VectorTileLayer` that wraps `ipyleaflet.VectorTileLayer` and allows advanced visualizations.
+- Added a new layer type `VectorRasterLayer` that represents a rasterization of a Vector product.
+
 ## v2.0.1 - 09/12/2025
 
 ### Added
