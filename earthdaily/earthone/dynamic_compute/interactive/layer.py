@@ -25,8 +25,6 @@ from earthdaily.earthone.core.vector.tiles import create_layer
 from pandas.api.types import is_numeric_dtype
 
 from ..datetime_utils import normalize_datetime_or_none
-from ..eo_utils import verify_vector_product
-from ..graft.client import apply_graft
 from ..operations import (
     API_HOST,
     UnauthorizedUserError,
@@ -1058,33 +1056,18 @@ class VectorRasterLayer(DynamicComputeLayer):
     """
     Subclass of ``DynamicComputeLayer`` for displaying a dynamic compute
     `Mosaic` that is derived from a vector product.
-
-    Attributes
-    ----------
-    product_id: str
-        The product ID of the vector product to use.
-    drawprop: str
-        The property of the vector product to use for drawing.
     """
-
-    drawprop = traitlets.Unicode(None, allow_none=True)
 
     def __init__(
         self,
-        product_id,
-        drawprop,
+        imagery,
         scales=None,
-        method="IDW",
         colormap=None,
         checkerboard=None,
         log_level=logging.DEBUG,
         **kwargs,
     ):
         self._url_updates_blocked = False
-        self.product_id = product_id
-        self.drawprop = drawprop
-        verify_vector_product(self.product_id, self.drawprop)
-        imagery = apply_graft(method, product_id=product_id, drawprop=drawprop)
         super(DynamicComputeLayer, self).__init__(**kwargs)
         with self.hold_url_updates():
             self.set_scales(scales, new_colormap=colormap)
@@ -1171,11 +1154,12 @@ class VectorRasterLayer(DynamicComputeLayer):
         # URL encode query parameters
         params = {}
         params["python_version"] = _python_major_minor_version
-        params["drawprop"] = self.drawprop
         if scales is not None:
             params["scales"] = json.dumps(scales)
         if self.colormap is not None:
             params["colormap"] = self.colormap
+        if self.checkerboard is not None:
+            params["checkerboard"] = self.checkerboard
 
         query_params = urlencode(params)
 

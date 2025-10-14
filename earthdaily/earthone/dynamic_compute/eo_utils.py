@@ -1,5 +1,7 @@
 """EarthOne interaction and utilities"""
 
+from typing import List
+
 import earthdaily.earthone as eo
 
 
@@ -28,15 +30,15 @@ def get_product_or_fail(product_id: str) -> eo.catalog.Product:
     return prod
 
 
-def verify_vector_product(product_id: str, drawprop: str) -> None:
+def verify_vector_product(product_id: str, columns: List[str]) -> None:
     """Verify that the product is valid and has the required draw property
 
     Parameters
     ----------
     product_id : str
         ID of the product
-    drawprop : str
-        The property to be used for drawing
+    columns: List[str]
+        A list of columns to verify
 
     Raises
     ------
@@ -54,17 +56,18 @@ def verify_vector_product(product_id: str, drawprop: str) -> None:
     if prod.model["properties"]["geometry"]["geometry"] != "POINT":
         err_msg = "Product must be of geometry type POINT"
         raise ValueError(err_msg)
-    if drawprop not in prod.columns:
+    if not all(col in prod.columns for col in columns):
         err_msg = (
-            f"Property '{drawprop}' not found in product '{product_id}'"  # noqa: E713
+            f"Not all of '{columns}' found in product '{product_id}'"  # noqa: E713
         )
         raise ValueError(err_msg)
-    props = prod.model["properties"][drawprop]
-    if "anyOf" in props:
-        types = {p["type"] for p in props["anyOf"]}
-        numeric = "number" in types
-    else:
-        numeric = "number" in props["type"]
-    if not numeric:
-        err_msg = f"Property '{drawprop}' is not numeric"
-        raise ValueError(err_msg)
+    props = [prod.model["properties"][col] for col in columns]
+    for prop in props:
+        if "anyOf" in prop:
+            types = {p["type"] for p in prop["anyOf"]}
+            numeric = "number" in types
+        else:
+            numeric = "number" in prop["type"]
+        if not numeric:
+            err_msg = f"Property '{prop['title']}' is not numeric"
+            raise ValueError(err_msg)

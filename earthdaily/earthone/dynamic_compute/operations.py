@@ -70,7 +70,7 @@ def format_bands(bands: Union[str, List[str]]) -> List[str]:
 
 
 def _get_pid_bands_pad(
-    properties: Union[List[dict], dict]
+    properties: Union[List[dict], dict],
 ) -> Tuple[Optional[str], Optional[List], Optional[int]]:
     """
     Given a properties object return the product id, bands and padding,
@@ -330,6 +330,40 @@ def create_layer(
     return lyr
 
 
+def create_rasterization(
+    product_id: str,
+    columns: str,
+    method: str,
+    pad: int = 0,
+    **params,
+) -> Dict:
+    """Rasterize a vector product in the EarthOne catalog.
+
+    Parameters
+    ----------
+    product_id : str
+        Catalog product ID of the vector product to rasterize.
+    columns : str
+        Space-delimited list of columns to rasterize.
+    method : str
+        Method to use for rasterization.
+
+    Returns
+    -------
+    dict
+        A graft whose result is the rasterized catalog product.
+    """
+
+    return graft_client.apply_graft(
+        "rasterization",
+        product_id,
+        columns,
+        method,
+        pad=pad,
+        **params,
+    )
+
+
 def create_mosaic(
     product_id: str,
     bands: str,
@@ -338,7 +372,6 @@ def create_mosaic(
     pad: int = 0,
     resampler: eo.catalog.ResampleAlgorithm = eo.catalog.ResampleAlgorithm.NEAR,
 ) -> Dict:
-
     """Mosaic a product in the EarthOne catalog.
 
     Parameters
@@ -774,7 +807,7 @@ def compute_aoi(
             all_touched=aoi.all_touched,
         )
     else:
-        raise TypeError(f"`compute` not implemented for AOIs of type {type(aoi)}")
+        raise TypeError(f"compute not implemented for AOIs of type {type(aoi)}")
 
     if not layer_id:
         # Create a layer from the graft if an id isn't supplied
