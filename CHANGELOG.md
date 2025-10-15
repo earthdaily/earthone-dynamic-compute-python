@@ -4,6 +4,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## v2.1.0 - 10/15/2025
+
 ### Added
 
 - Added a new layer type `VectorTileLayer` that wraps `ipyleaflet.VectorTileLayer` and allows advanced visualizations.
