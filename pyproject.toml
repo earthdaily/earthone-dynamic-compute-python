@@ -36,7 +36,7 @@ imagecodecs = [
 ]
 matplotlib = ">3.6"
 earthdaily-earthone = "^5.0.0"
-
+blosc2 = "^3.10.1"
 
 [build-system]
 requires = ["poetry-core"]
