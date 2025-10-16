@@ -54,6 +54,7 @@ jobs:
 
           pip install twine build
           pip install -U packaging
+
           python3 -m build
 
       # Upload the Python wheel packages to PyPI using an API Token
