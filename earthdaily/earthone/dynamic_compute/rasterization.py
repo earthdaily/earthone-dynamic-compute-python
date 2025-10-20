@@ -143,6 +143,10 @@ class Rasterization(
         product_id: str,
         columns: Union[str, List[str]],
         method: str,
+        maxcells: int = 10,
+        pad: int = 0,
+        nclosest: int = 0,
+        statistic: Optional[str] = None,
         **kwargs,
     ) -> Rasterization:
         """
@@ -155,7 +159,20 @@ class Rasterization(
         columns: Union[str, List[str]]
             A space-separated list of columns within the product, or a list of strings.
         method: str
-            Method to use for rasterization.
+            Method to use for rasterization. Currently supported methods are "IDW" and "fishnet".
+        maxcells: int, default: 10
+            Maximum number of cells, in current map pixels, for extrapolating results. For "fishnet"
+            method, this represents the bin size used when computing statistics, and for "IDW" method
+            it represents the search distance for the interpolation.
+        pad: int, default: 0
+            Amount to pad each tile, in pixels.
+        nclosest: int, default: 0
+            Number of closest points to consider when using IDW method. If 0, all points are considered.
+        statistic: str, optional
+            Statistic to use when rasterizing with fishnet method. Valid options are one of 'min', 'max',
+            'mean', 'count', or 'count-bdl'.
+        kwargs: dict, optional
+            Additional keyword arguments to pass to the rasterization method.
 
         Returns
         -------
@@ -164,20 +181,28 @@ class Rasterization(
         """
         if method not in RAST_METHODS:
             raise NotImplementedError(
-                f"Method `{method}` not implemented for Rasterizations."
+                f"Method {method} not implemented for Rasterizations."
             )
+        methodparams = {}
+        methodparams["maxcells"] = maxcells
+        methodparams["pad"] = pad
         if method == "fishnet":
-            assert "statistic" in kwargs, (
+            assert statistic is not None, (
                 "statistic is required to rasterize with fishnet method. Valid options"
                 " are one of 'min', 'max', 'mean', 'count', or 'count-bdl'."
             )
+            methodparams["statistic"] = statistic
+        else:
+            methodparams["nclosest"] = nclosest
         columns = format_bands(columns)
 
         verify_vector_product(product_id, columns)
 
         columns = " ".join(columns)
 
-        graft = create_rasterization(product_id, columns, method, **kwargs)
+        graft = create_rasterization(
+            product_id, columns, method, **methodparams, **kwargs
+        )
 
         return cls(graft, columns, product_id)
 
