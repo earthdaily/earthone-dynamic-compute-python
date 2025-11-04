@@ -66,7 +66,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- Added support for `descarteslabs==4.0.0`, which involved upgrading a few packages and minor code changes to accommodate those upgrades.
+- Added support for `descarteslabs` v4.0.0, which involved upgrading a few packages and minor code changes to accommodate those upgrades.
 
 ## v1.4.1 - 03/05/2025
 
