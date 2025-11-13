@@ -19,6 +19,7 @@ from .compute_map import (
     tan,
 )
 from .dot import dot
+from .geofencing import GeoFencing
 from .groupby import ImageStackGroupBy
 from .image_stack import ImageStack
 from .interactive import map
@@ -51,6 +52,7 @@ __all__ = [
     "arctan",
     "log",
     "log10",
+    "GeoFencing",
     "Mosaic",
     "Rasterization",
     "ImageStack",
