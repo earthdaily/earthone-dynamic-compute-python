@@ -63,9 +63,6 @@ class GeoFencing:
                 raise e
 
     def get_cached_fence(self) -> Geometry:
-        if not self.check_fence():
-            return shape(geojson.GeometryCollection())
-
         response = requests.get(
             f"{API_HOST}/cache/orgfuncs/geofencing/{self.org}",
             headers={"Authorization": eo.auth.Auth.get_default_auth().token},
@@ -73,4 +70,5 @@ class GeoFencing:
         if response.content is not "".encode():
             fence_gj = json.loads(response.content.decode())
             return shape(fence_gj)
-        response.raise_for_status()
+        else:
+            return shape(geojson.GeometryCollection())
