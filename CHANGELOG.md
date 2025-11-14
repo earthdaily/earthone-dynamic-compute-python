@@ -4,6 +4,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## v2.2.0 - 11/14/2025
+
+### Added
+
+- Added a class for working with geofence boundaries.
+
 ## v2.1.0 - 10/15/2025
 
 ### Added
