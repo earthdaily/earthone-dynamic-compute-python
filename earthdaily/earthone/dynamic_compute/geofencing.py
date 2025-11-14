@@ -39,6 +39,12 @@ class GeoFencing:
 
         merged_geometry = unary_union([geom for geom in self.fence_table["geometry"]])
         as_bytes = json.dumps(merged_geometry.__geo_interface__).encode()
+        # check the fence table against the current cache
+        if self.check_cached_fence():
+            cached_fence = self.get_cached_fence()
+            if merged_geometry.equals(cached_fence):
+                return
+
         files = {"fence": ("geofence.json", as_bytes, "application/json")}
         response = requests.post(
             f"{API_HOST}/cache/orgfuncs/geofencing/{self.org}",
