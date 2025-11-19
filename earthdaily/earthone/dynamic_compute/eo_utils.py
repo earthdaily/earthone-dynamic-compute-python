@@ -5,7 +5,7 @@ from typing import List
 import earthdaily.earthone as eo
 
 
-def get_product_or_fail(product_id: str) -> eo.catalog.Product:
+def get_product_or_fail(product_id: str, **kwargs) -> eo.catalog.Product:
     """A throwing version of eo.catalog.Product.get()
 
     Parameters
@@ -19,7 +19,11 @@ def get_product_or_fail(product_id: str) -> eo.catalog.Product:
         The requested catalog product
     """
 
-    prod = eo.catalog.Product.get(product_id)
+    catalog_client = kwargs.pop("catalog_client", None)
+    if kwargs:
+        raise TypeError(f"Unexpected keyword arguments: {kwargs}")
+
+    prod = eo.catalog.Product.get(product_id, client=catalog_client)
     if prod is None:
         err_msg = (
             f"Product with id '{product_id}' either does not "

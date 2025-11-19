@@ -323,7 +323,9 @@ class ImageStack(
             New ImageStack object.
         """
 
-        _ = get_product_or_fail(product_id)
+        _ = get_product_or_fail(
+            product_id, catalog_client=kwargs.pop("catalog_client", None)
+        )
         start_datetime = normalize_datetime(start_datetime)
         end_datetime = normalize_datetime(end_datetime)
 

@@ -4,6 +4,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Added option to pass in an `earthdaily.earthone.core.catalog.catalog_client.CatalogClient` object to `Mosaic.from_product_bands` and `ImageStack.from_product_bands` calls to allow alternative clients to be used.
+
 ## v2.2.0 - 11/14/2025
 
 ### Added

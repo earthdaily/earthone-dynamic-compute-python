@@ -272,7 +272,9 @@ class Mosaic(
             New mosaic object.
         """
 
-        _ = get_product_or_fail(product_id)
+        _ = get_product_or_fail(
+            product_id, catalog_client=kwargs.pop("catalog_client", None)
+        )
         start_datetime = normalize_datetime_or_none(start_datetime)
         end_datetime = normalize_datetime_or_none(end_datetime)
 
