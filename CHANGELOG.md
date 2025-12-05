@@ -51,14 +51,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- Replaced the `descarteslabs` package with the `earthdaily.earthone` package.
+- Updates to use the `earthdaily.earthone` package.
 - Drop support for Python 3.9.
 
 ## v1.5.0 - 05/15/2025
 
 ### Changed
 
-- Change the DynamicComputeLayer attribution from `Descartes Labs` to `EarthDaily Analytics`
+- Update the DynamicComputeLayer attribution to be from `EarthDaily Analytics`
 
 ### Added
 
@@ -70,13 +70,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- Updated the allowed versions of `numpy` in the client to be compatible with newer versions of `tensorflow` so that the latest `descarteslabs-dynamic-compute` package can be installed on workbench.
+- Updated the allowed versions of `numpy` in the client to be compatible with newer versions of `tensorflow` so that the latest version of this package can be installed on workbench.
 
 ## v1.4.2 - 03/17/2025
 
 ### Added
 
-- Added support for `descarteslabs` 4.0.0, which involved upgrading a few packages and minor code changes to accommodate those upgrades.
+- Added support for `earthdaily.earthone` 4.0.0, which involved upgrading a few packages and minor code changes to accommodate those upgrades.
 
 ## v1.4.1 - 03/05/2025
 
@@ -127,12 +127,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- Added resampler to `from_product_bands` for `Mosaic` and `ImageStack`. All values from descarteslabs.catalog.ResampleAlgorithm are valid.
+- Added resampler to `from_product_bands` for `Mosaic` and `ImageStack`. All values from earthdaily.earthone.catalog.ResampleAlgorithm are valid.
 - Added an optional `"classes"` parameter to `.visualize`. When added, the data will be clipped to those values to be visualized as a classified layer.
 
 ### Changed
 
-- Filtering of `ImageStack`s now directly uses `descarteslabs.catalog.properties`
+- Filtering of `ImageStack`s now directly uses `earthdaily.earthone.catalog.properties`
 
 ## v1.2.0 - 08/13/2024
 
@@ -143,7 +143,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- Use `DescartesLabsBuild` user instead of `DescartesBuild` to add changes to the public repository
 - Remove support for Python 3.8
 
 ### Added
@@ -214,7 +213,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- Relaxed the requirement for `descarteslabs` in the client to <3.1.0
 - Bumped the requirement for `shapely` in the client to >2
 - Return geometries in `ImageStack` as a WKT string instead of a `Polygon` to be compatible with various versions of `shapely`
 
@@ -353,12 +351,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added a `compute_all` method to ImageStackGroupBy
 - Added a `one` method to ImageStackGroupBy
 
-### Fixed
-
-### Changed
-
-- Upgrade `descarteslabs` dependency to latest version 2.0.3.
-
 ## v0.5.0 - 6/27/2023
 
 ### Fixed
@@ -372,10 +364,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## v0.4.2 - 6/14/2023
 
-### Changed
-
-- Upgrade `descarteslabs` dependency to latest version 2.0.1.
-
 ### Fixed
 
 - Applying a mapped function (such as a reducer) to ImageStackGroupBy now returns an ImageStackGroupBy (which supports saving and loading)
@@ -386,10 +374,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - Added `__version__` property to dynamic compute.
-
-### Changed
-
-- Point to PyPI release of `descarteslabs`
 
 ## v0.4.0 - 6/8/2023
 
@@ -418,7 +402,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added a new dl_utils module in both client and api that adds a get_product_or_fail function
 - get_product_or_fail used to replace several instances of the same behavior in api
 - get_product_or_fail used to cause earlier indication of bad product access at Mosaic and ImageStack construction time
-- New blob module in client.descarteslabs.dynamic_compute library
+- New blob module in client.earthdaily.earthone.dynamic_compute library
 - New save_to_catalog and load_from_catalog methods on ComputeMap
 - Error messages from .visualize now are displayed as tiles
 
@@ -498,7 +482,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Changed default `zinnia` deployment to be in `appsci-production`
 - Changed to name from `zinnia` to `dynamic-compute`
 - Changed how we handle caching of proxy objects -- all grafts for Mosaics or ImageStacks are set as cacheable.
-- `dynamic_compute` is now imported as `descarteslabs.dynamic_compute`
+- `dynamic_compute` is now imported as `earthdaily.earthone.dynamic_compute`
 
 ### Fixed
 

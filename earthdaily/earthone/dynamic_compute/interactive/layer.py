@@ -196,14 +196,7 @@ class VectorTileLayer(ipyleaflet.VectorTileLayer):
             "weight": self.weight,
             "radius": self.radius,
         }
-        if self.product_id.split(":")[0] == "earthdaily":
-            dl_name = ":".join(["descarteslabs"] + self.product_id.split(":")[1:])
-            self.vector_tile_layer_styles = {
-                self.product_id: prime_dict,
-                dl_name: prime_dict,
-            }
-        else:
-            self.vector_tile_layer_styles = {self.product_id: prime_dict}
+        self.vector_tile_layer_styles = {self.product_id: prime_dict}
 
     def _color_by_property(self, change):
         if not self.property_coloring:
@@ -239,96 +232,35 @@ class VectorTileLayer(ipyleaflet.VectorTileLayer):
                 f"{{ threshold: {v:.6f}, color: '{c}' }}"
                 for v, c in zip(thresholds, colors)
             )
-            if self.product_id.split(":")[0] == "earthdaily":
-                dl_name = ":".join(["descarteslabs"] + self.product_id.split(":")[1:])
-                jstyle = f"""{{
-                    "{self.product_id}": function(properties, zoom) {{
-                    var value = properties.{self.chosen_prop};
-                    var color = '#999';
+            jstyle = f"""{{"{self.product_id}": function(properties, zoom) {{
+                var value = properties.{self.chosen_prop};
+                var color = '#999';
 
-                    var colorStops = [
-                        {js_color_stops}
-                    ];
+                var colorStops = [
+                    {js_color_stops}
+                ];
 
-                    for (var i = 0; i < colorStops.length - 1; i++) {{
-                        if (value >= colorStops[i].threshold && value < colorStops[i + 1].threshold) {{
-                            color = colorStops[i].color;
-                            break;
-                        }}
+                for (var i = 0; i < colorStops.length - 1; i++) {{
+                    if (value >= colorStops[i].threshold && value < colorStops[i + 1].threshold) {{
+                        color = colorStops[i].color;
+                        break;
                     }}
-                    if (value < colorStops[0].threshold) {{
-                        color = colorStops[0].color;
-                    }}
-                    if (value >= colorStops[colorStops.length - 1].threshold) {{
-                        color = colorStops[colorStops.length - 1].color;
-                    }}
+                }}
+                if (value < colorStops[0].threshold) {{
+                    color = colorStops[0].color;
+                }}
+                if (value >= colorStops[colorStops.length - 1].threshold) {{
+                    color = colorStops[colorStops.length - 1].color;
+                }}
 
-                    return {{ color: color,
-                            fill: true,
-                            fillColor: color,
-                            opacity: {self.opacity},
-                            fillOpacity: {self.fill_opacity},
-                            weight: {self.weight},
-                            radius: {self.radius} }};
-                    }},
-                    "{dl_name}": function(properties, zoom) {{
-                    var value = properties.{self.chosen_prop};
-                    var color = '#999';
-
-                    var colorStops = [
-                        {js_color_stops}
-                    ];
-
-                    for (var i = 0; i < colorStops.length - 1; i++) {{
-                        if (value >= colorStops[i].threshold && value < colorStops[i + 1].threshold) {{
-                            color = colorStops[i].color;
-                            break;
-                        }}
-                    }}
-                    if (value < colorStops[0].threshold) {{
-                        color = colorStops[0].color;
-                    }}
-                    if (value >= colorStops[colorStops.length - 1].threshold) {{
-                        color = colorStops[colorStops.length - 1].color;
-                    }}
-                    return {{ color: color,
-                            fill: true,
-                            fillColor: color,
-                            opacity: {self.opacity},
-                            fillOpacity: {self.fill_opacity},
-                            weight: {self.weight},
-                            radius: {self.radius} }};
+                return {{ color: color,
+                        fill: true,
+                        fillColor: color,
+                        opacity: {self.opacity},
+                        fillOpacity: {self.fill_opacity},
+                        weight: {self.weight},
+                        radius: {self.radius} }};
                 }} }}"""
-            else:
-                jstyle = f"""{{"{self.product_id}": function(properties, zoom) {{
-                    var value = properties.{self.chosen_prop};
-                    var color = '#999';
-
-                    var colorStops = [
-                        {js_color_stops}
-                    ];
-
-                    for (var i = 0; i < colorStops.length - 1; i++) {{
-                        if (value >= colorStops[i].threshold && value < colorStops[i + 1].threshold) {{
-                            color = colorStops[i].color;
-                            break;
-                        }}
-                    }}
-                    if (value < colorStops[0].threshold) {{
-                        color = colorStops[0].color;
-                    }}
-                    if (value >= colorStops[colorStops.length - 1].threshold) {{
-                        color = colorStops[colorStops.length - 1].color;
-                    }}
-
-                    return {{ color: color,
-                            fill: true,
-                            fillColor: color,
-                            opacity: {self.opacity},
-                            fillOpacity: {self.fill_opacity},
-                            weight: {self.weight},
-                            radius: {self.radius} }};
-                    }} }}"""
         else:
             self.color_min, self.color_max = 0, 0
             num_cats = len(self.df[self.chosen_prop].unique())
@@ -338,77 +270,27 @@ class VectorTileLayer(ipyleaflet.VectorTileLayer):
             js_color_stops = ",\n        ".join(
                 f"{{ cat: '{v}', color: '{c}' }}" for v, c in self.categories.items()
             )
-            if self.product_id.split(":")[0] == "earthdaily":
-                dl_name = ":".join(["descarteslabs"] + self.product_id.split(":")[1:])
-                jstyle = f"""{{
-                    "{self.product_id}": function(properties, zoom) {{
-                    var value = properties.{self.chosen_prop};
-                    var color = '#999';
+            jstyle = f"""{{"{self.product_id}": function(properties, zoom) {{
+                var value = properties.{self.chosen_prop};
+                var color = '#999';
 
-                    var colorStops = [
-                        {js_color_stops}
-                    ];
+                var colorStops = [{js_color_stops}];
 
-                    for (var i = 0; i < colorStops.length - 1; i++) {{
-                        if (value === colorStops[i].cat) {{
-                            color = colorStops[i].color;
-                            break;
-                        }}
+                for (var i = 0; i < colorStops.length - 1; i++) {{
+                    if (value == colorStops[i].cat) {{
+                        color = colorStops[i].color;
+                        break;
                     }}
+                }}
 
-                    return {{ color: color,
-                            fill: true,
-                            fillColor: color,
-                            opacity: {self.opacity},
-                            fillOpacity: {self.fill_opacity},
-                            weight: {self.weight},
-                            radius: {self.radius} }};
-                    }},
-                    "{dl_name}": function(properties, zoom) {{
-                    var value = properties.{self.chosen_prop};
-                    var color = '#999';
-
-                    var colorStops = [
-                        {js_color_stops}
-                    ];
-
-                    for (var i = 0; i < colorStops.length - 1; i++) {{
-                        if (value === colorStops[i].cat) {{
-                            color = colorStops[i].color;
-                            break;
-                        }}
-                    }}
-
-                    return {{ color: color,
-                            fill: true,
-                            fillColor: color,
-                            opacity: {self.opacity},
-                            fillOpacity: {self.fill_opacity},
-                            weight: {self.weight},
-                            radius: {self.radius} }};
+                return {{ color: color,
+                        fill: true,
+                        fillColor: color,
+                        opacity: {self.opacity},
+                        fillOpacity: {self.fill_opacity},
+                        weight: {self.weight},
+                        radius: {self.radius} }};
                 }} }}"""
-            else:
-                jstyle = f"""{{"{self.product_id}": function(properties, zoom) {{
-                    var value = properties.{self.chosen_prop};
-                    var color = '#999';
-
-                    var colorStops = [{js_color_stops}];
-
-                    for (var i = 0; i < colorStops.length - 1; i++) {{
-                        if (value == colorStops[i].cat) {{
-                            color = colorStops[i].color;
-                            break;
-                        }}
-                    }}
-
-                    return {{ color: color,
-                            fill: true,
-                            fillColor: color,
-                            opacity: {self.opacity},
-                            fillOpacity: {self.fill_opacity},
-                            weight: {self.weight},
-                            radius: {self.radius} }};
-                    }} }}"""
         self.vector_tile_layer_styles = jstyle
 
     def _set_categories(self):
@@ -679,7 +561,7 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
             )
         >>> layer = img.visualize("sample", m) # doctest: +SKIP
         >>> layer.make_url() # doctest: +SKIP
-        'https://"https://dynamic-compute.appsci-production.earthone.earthdaily.com/layers/9ec70d0e99db7f50c856c774809ae454ffd8475816e05c5c/tile/{z}/{x}/{y}?scales=%5B%5B0.0%2C+1.0%5D%5D&colormap=viridis&checkerboard=False'
+        'https://"https://dynamic-compute.production.earthone.earthdaily.com/layers/9ec70d0e99db7f50c856c774809ae454ffd8475816e05c5c/tile/{z}/{x}/{y}?scales=%5B%5B0.0%2C+1.0%5D%5D&colormap=viridis&checkerboard=False'
         """
         if not self.visible:
             # workaround for the fact that Leaflet still loads tiles from inactive layers,
@@ -1105,7 +987,7 @@ class VectorRasterLayer(DynamicComputeLayer):
             )
         >>> layer = img.visualize("sample", m) # doctest: +SKIP
         >>> layer.make_url() # doctest: +SKIP
-        'https://"https://dynamic-compute.appsci-production.earthone.earthdaily.com/layers/9ec70d0e99db7f50c856c774809ae454ffd8475816e05c5c/tile/{z}/{x}/{y}?scales=%5B%5B0.0%2C+1.0%5D%5D&colormap=viridis&checkerboard=False'
+        'https://"https://dynamic-compute.production.earthone.earthdaily.com/layers/9ec70d0e99db7f50c856c774809ae454ffd8475816e05c5c/tile/{z}/{x}/{y}?scales=%5B%5B0.0%2C+1.0%5D%5D&colormap=viridis&checkerboard=False'
         """
         if not self.visible:
             # workaround for the fact that Leaflet still loads tiles from inactive layers,
