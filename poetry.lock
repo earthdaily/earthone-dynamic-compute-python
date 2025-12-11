@@ -532,14 +532,14 @@ yaml = ["ruamel.yaml"]
 
 [[package]]
 name = "earthdaily-earthone"
-version = "5.0.0"
+version = "5.0.1"
 description = "EarthOne Python Client"
 optional = false
 python-versions = "~=3.10"
 groups = ["main"]
 files = [
-    {file = "earthdaily_earthone-5.0.0-py3-none-any.whl", hash = "sha256:d2a675b3bef4c60e96ca848b2c49b36dfd2c0d8ecf1eb9b09762899fda846d4b"},
-    {file = "earthdaily_earthone-5.0.0.tar.gz", hash = "sha256:b85a116c84858658ecf585e0b173ad2ccf834b6f785587510d3ffe8151137ba1"},
+    {file = "earthdaily_earthone-5.0.1-py3-none-any.whl", hash = "sha256:888f8c01692a085b68ff1a7479c0385ef6bf3825496dbb1535295243c5c1bfda"},
+    {file = "earthdaily_earthone-5.0.1.tar.gz", hash = "sha256:862ac653b72e074dbcf50134a97b5989156d8fbc9fb5536e1f4ba424dd41dac7"},
 ]
 
 [package.dependencies]
@@ -2849,4 +2849,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10, <3.13"
-content-hash = "aab9df7f50bc43a4c1668f77e3d2d2c4de9620726d0815730fd01c30e44eee85"
+content-hash = "dbfc8daafd42c6c899af36c5bcbe913ea140dc6aae8fdc2630a69c80ad3fcb54"
