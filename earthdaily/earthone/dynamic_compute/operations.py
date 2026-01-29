@@ -1517,3 +1517,36 @@ def convolve(
     return graft_client.apply_graft(
         "convolve", graft, knl, size_x=size_x, size_y=size_y, res_x=res_x, res_y=res_y
     )
+
+
+def morphology(
+    graft: dict,
+    method: str,
+    size: float,
+    res_x: float | None = None,
+    res_y: float | None = None,
+):
+    """
+    Create a graft representing a morphological operation
+
+    Parameters
+    ----------
+    graft: dict
+        Dictionary representing the imagery.
+    method: str
+        The operation to apply.
+    size: float
+        The size of the operation's kernel
+    res_x: Optional[dict]
+        Optioanl graft for evaluating x resolution
+    res_y: Optional[dict]
+        Optioanl graft for evaluating y resolution
+
+    Returns
+    -------
+    morphology_graft: dict
+        Dictionary encoding the result of the operation
+    """
+    return graft_client.apply_graft(
+        "morphology", graft, method, size, res_x=res_x, res_y=res_y
+    )

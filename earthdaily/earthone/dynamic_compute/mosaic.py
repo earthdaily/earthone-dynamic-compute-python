@@ -49,6 +49,7 @@ from .operations import (
     gradient_x,
     gradient_y,
     is_op,
+    morphology,
     op_args,
     op_type,
     reset_graft,
@@ -756,6 +757,53 @@ class Mosaic(
                 res_y=res_y,
             )
         )
+
+    def morphology(
+        self,
+        operation: str,
+        size: float,
+        size_units: str,
+        pad: float | None = None,
+    ) -> Mosaic:
+        """
+        Apply a morphological operation to the Mosaic. Currently supports dilation and erosion.
+
+        Parameters
+        ----------
+        operation: {"erosion", "dilation"}
+            Morphological operation to apply
+        size: float
+            The size of the operation's kernel, in units of `size_units`
+        size_units: {"pixels", "resolution"}
+            How the `size` parameter should be interpreted. `pixels` uses the resolution of the
+            AOI, `resolution` will operate on the native resolution of the graft
+        pad: float | None
+            Optional padding value used for the new Mosaic
+        """
+
+        if operation not in ["erosion", "dilation"]:
+            raise Exception(f"Operation {operation} not supported")
+        if size_units not in ["pixels", "resolution"]:
+            raise Exception("size_units must be one of 'pixels', 'resolution'")
+
+        if size_units == "resolution":
+            return Mosaic(
+                morphology(
+                    dict(self),
+                    operation,
+                    size,
+                    _resolution_graft_x(),
+                    _resolution_graft_y(),
+                )
+            )
+        else:
+            return Mosaic(
+                morphology(
+                    dict(self),
+                    operation,
+                    size,
+                )
+            )
 
     @classmethod
     def deserialize(cls, data: str) -> Mosaic:
