@@ -4,6 +4,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Update dependencies to add support for Python 3.13.
+
+### Changed
+
+- Removed `client/poetry.lock` file to follow best [Poetry practices](https://python-poetry.org/docs/basic-usage/#as-a-library-developer).
+
 ## v2.2.1 - 12/10/2025
 
 ### Added
