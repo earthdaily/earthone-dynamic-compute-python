@@ -4,6 +4,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## v2.3.0 - 02/02/2026
+
 ### Added
 
 - Added support for erosion and dilation.
