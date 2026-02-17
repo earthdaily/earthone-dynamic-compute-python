@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "earthdaily-earthone-dynamic-compute"
-version = "2.3.0"
+version = "2.3.1"
 description = ""
 license = "Apache-2.0"
 authors = ["EarthDaily"]
@@ -36,7 +36,7 @@ imagecodecs = [
     {version = ">=2023.7.4", python = ">=3.13"},
 ]
 matplotlib = ">3.6"
-earthdaily-earthone = ">=5,<6"
+earthdaily-earthone = ">=5,<7"
 blosc2 = "^3.10.1"
 pytz = "^2025.2"
 

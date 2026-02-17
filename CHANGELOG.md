@@ -2,7 +2,9 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## v2.3.1 - 02/17/2026
+
+- Update the `earthdaily-earthone` dependency to be `>=5,<7`.
 
 ## v2.3.0 - 02/02/2026
 
