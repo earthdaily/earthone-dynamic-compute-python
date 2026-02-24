@@ -448,7 +448,10 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
         if classes and scales:
             warnings.warn("Classes are provided, scales will be ignored")
 
-        if classes and len(imagery.bands.split(" ")) > 1:
+        if (
+            classes
+            and (isinstance(imagery.bands, str) and len(imagery.bands.split(" "))) > 1
+        ):
             warnings.warn(
                 "Classes can only be used with single-band images, classes will be ignored"
             )
