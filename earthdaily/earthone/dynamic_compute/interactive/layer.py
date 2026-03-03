@@ -673,10 +673,10 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
             return
         if self.colormap:
             # If a colormap is defined, use it to define colors. This will override user defined colors.
-            cmap = plt.get_cmap(self.colormap, len(self.classes) + 1)
+            cmap = plt.get_cmap(self.colormap, len(self.classes))
         elif "color" not in self.classes[0].keys():
             # Colormap is not defined, but colors are not either
-            cmap = plt.get_cmap("viridis", len(self.classes) + 1)
+            cmap = plt.get_cmap("viridis", len(self.classes))
         else:
             # User provided colors with no map, use them.
             return
