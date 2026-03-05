@@ -504,7 +504,7 @@ class Mosaic(
         Returns:
             Mosaic
         """
-        if axis != "bands":
+        if axis not in ["bands", None]:
             raise NotImplementedError(
                 f"Reduction over {axis} not implemented for Mosaic"
             )

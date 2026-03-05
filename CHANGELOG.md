@@ -4,6 +4,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+- Allow reductions (min, max, mean, etc.) to be performed over `axis=None`, which will return a single value as a `ComputeMap` object.
+
 ### Changed
 
 - Classified layers with a colorbar defined will now use the entire color range.

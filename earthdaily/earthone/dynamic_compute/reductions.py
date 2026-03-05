@@ -7,8 +7,12 @@ BUILT_IN_REDUCERS = ["max", "min", "mean", "median", "sum", "std"]
 
 
 def _get_return_type(axis, obj_type_str):
+    from .compute_map import ComputeMap
     from .image_stack import ImageStack
     from .mosaic import Mosaic
+
+    if axis is None:
+        return ComputeMap
 
     if axis == "bands":
         if obj_type_str == "ImageStack":
