@@ -4,7 +4,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## v2.3.2 - 03/06/2026
+
+### Added
+
 - Allow reductions (min, max, mean, etc.) to be performed over `axis=None`, which will return a single value as a `ComputeMap` object.
+- Allow a custom `earthdaiy.eathone.auth.Auth` instance to be passed into `.compute` and `.visualize` calls, instead of relying on the default auth of the environment.
 
 ### Changed
 
