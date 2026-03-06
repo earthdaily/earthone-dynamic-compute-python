@@ -376,6 +376,9 @@ def create_mosaic(
     bands: str,
     start_datetime: Optional[str] = None,
     end_datetime: Optional[str] = None,
+    predicate_filter: str = None,
+    sort_by: str = None,
+    ascending: bool = True,
     pad: int = 0,
     resampler: eo.catalog.ResampleAlgorithm = eo.catalog.ResampleAlgorithm.NEAR,
 ) -> Dict:
@@ -411,6 +414,9 @@ def create_mosaic(
         end_datetime=end_datetime,
         pad=pad,
         resampler=resampler,
+        predicate_filter=predicate_filter,
+        sort_by=sort_by,
+        ascending=ascending,
     )
 
 

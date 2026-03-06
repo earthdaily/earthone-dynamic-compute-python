@@ -73,6 +73,9 @@ class MosaicSerializationModel(BaseSerializationModel):
     bands: Union[str, List[str]]
     start_datetime: Optional[str] = None
     end_datetime: Optional[str] = None
+    predicate_filter: Optional[str] = None
+    sort_by: Optional[str] = None
+    ascending: Optional[bool] = None
 
     @classmethod
     def from_json(cls, data: str) -> MosaicSerializationModel:
@@ -112,6 +115,9 @@ class Mosaic(
             Union[str, datetime.date, datetime.datetime, Datetime]
         ] = None,
         image_ids: Optional[List[str]] = None,
+        predicate_filter: Optional[str] = None,
+        sort_by: Optional[str] = None,
+        ascending: Optional[bool] = None,
     ):
         """
         Initialize a new instance of Mosaic. Users should rely on
@@ -253,6 +259,9 @@ class Mosaic(
         end_datetime: Optional[
             Union[str, datetime.date, datetime.datetime, Datetime]
         ] = None,
+        predicate_filter: eo.catalog.properties.OpExpression = None,
+        sort_by: str = None,
+        ascending: bool = True,
         **kwargs,
     ) -> Mosaic:
         """
@@ -268,6 +277,20 @@ class Mosaic(
             Start date for mosaic
         end_datetime: Optional[Union[str, datetime.date, datetime.datetime]
             End date for mosaic
+                predicate_filter: eo.catalog.properties.OpExpression
+            Optional kwarg that allows filtering of scenes prior to
+            creating the ImageStack. The benefit of using this over
+            the .filter() method is that it allows filtering of metadata
+            before an ImageCollection is created, which allows less data
+            to be requested from platform. The downside is this filter
+            cannot be changed without changing the ImageStack object.
+        sort_by: str
+            Optional kwarg that allows for sorting of images. Follows the
+            same logic as sorting for catalog. See for more details:
+            https://docs.earthdaily.earthone.com/earthdaily.earthone/catalog/docs/image.html
+        ascending: bool
+            Optional kwarg that is used in sorting. Defaults to True. If sort_by
+            is not provided, this kwarg will be ignored.
 
 
         Returns
@@ -294,9 +317,41 @@ class Mosaic(
             ), f"Proxytypes for dates must be dc.Datetime, not {end_datetime.type}"
             end_datetime = end_datetime.name
 
+        if predicate_filter:
+            if hasattr(predicate_filter, "jsonapi_serialize"):
+                predicate_filter = json.dumps(
+                    predicate_filter.jsonapi_serialize(eo.catalog.Image)
+                )
+            elif isinstance(predicate_filter, str):
+                try:
+                    eo.core.common.property_filtering.Expression.parse(predicate_filter)
+                except json.JSONDecodeError:
+                    raise Exception(
+                        "Unrecognized filter. Please refer to filtering "
+                        "documentation: https://docs.earthdaily.earthone.com/"
+                        "earthdaily.earthone/utils/readme.html#module-earthdaily.earthone"
+                        ".common.property_filtering.filtering"
+                    )
+            else:
+                raise Exception(
+                    "Unrecognized filter. Please refer to filtering "
+                    "documentation: https://docs.earthdaily.earthone.com/"
+                    "earthdaily.earthone/utils/readme.html#module-earthdaily.earthone"
+                    ".common.property_filtering.filtering"
+                )
+
         bands = " ".join(format_bands(bands))
 
-        graft = create_mosaic(product_id, bands, start_datetime, end_datetime, **kwargs)
+        graft = create_mosaic(
+            product_id,
+            bands,
+            start_datetime,
+            end_datetime,
+            predicate_filter,
+            sort_by,
+            ascending,
+            **kwargs,
+        )
 
         return cls(graft, bands, product_id, start_datetime, end_datetime)
 
