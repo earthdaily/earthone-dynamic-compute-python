@@ -34,7 +34,7 @@ def get_product_or_fail(product_id: str, **kwargs) -> eo.catalog.Product:
     return prod
 
 
-def verify_vector_product(product_id: str, columns: List[str]) -> None:
+def verify_vector_product(product_id: str, columns: List[str], **kwargs) -> None:
     """Verify that the product is valid and has the required draw property
 
     Parameters
@@ -50,7 +50,8 @@ def verify_vector_product(product_id: str, columns: List[str]) -> None:
         If the product is not a vector product or does not have the required draw property
     """
 
-    prod = eo.vector.Table.get(product_id)
+    vector_client = kwargs.pop("vector_client", None)
+    prod = eo.vector.Table.get(product_id, client=vector_client)
     if prod is None:
         err_msg = (
             f"Product with id '{product_id}' either does not "
@@ -75,3 +76,11 @@ def verify_vector_product(product_id: str, columns: List[str]) -> None:
         if not numeric:
             err_msg = f"Property '{prop['title']}' is not numeric"
             raise ValueError(err_msg)
+
+
+def add_bearer(token):
+    """For use with Authorization headers, add "Bearer "."""
+    if token:
+        return ("Bearer " if isinstance(token, str) else b"Bearer ") + token
+    else:
+        return token

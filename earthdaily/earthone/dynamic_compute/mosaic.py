@@ -226,6 +226,8 @@ class Mosaic(
             DynamicComputeLayer,
         )
 
+        # we don't have a kwargs to hide this, so hide it in parameter_overrides
+        auth = parameter_overrides.pop("auth", None)
         return DynamicComputeLayer(
             self,
             name=name,
@@ -236,6 +238,7 @@ class Mosaic(
             val_range=val_range,
             alpha=alpha,
             log_level=log_level,
+            auth=auth,
             parameter_overrides=parameter_overrides,
         )
 

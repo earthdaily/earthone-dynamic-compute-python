@@ -28,7 +28,7 @@ class ImageStackGroups:
         self.computed_AOI: AOI = None
         self.reducer: ImageStackReducer = None
 
-    def compute(self, aoi: AOI) -> Generator[Any, ComputeMap]:
+    def compute(self, aoi: AOI, **kwargs) -> Generator[Any, ComputeMap]:
         """
         Evaluate this groups object for a particular AOI and return a generator yielding
         tupleS of (group key, ComputeMap)
@@ -44,7 +44,7 @@ class ImageStackGroups:
         """
 
         if not self.computed_value or self.computed_AOI != aoi:
-            self.computed_value, _ = compute_aoi(self.groups_graft, aoi)
+            self.computed_value, _ = compute_aoi(self.groups_graft, aoi, **kwargs)
             self.computed_AOI = aoi
 
         for group_name, id_list in self.computed_value:
@@ -68,7 +68,7 @@ class ImageStackGroups:
                 )
             yield group_name, compute_map
 
-    def compute_all(self, aoi: AOI) -> dict:
+    def compute_all(self, aoi: AOI, **kwargs) -> dict:
         """
         Compute the groups for `aoi`, compute each resulting key/ComputeMap pair for the supplied AOI,
         and return a dictionary containing a key for each unique group and its computed DotDict. This
@@ -85,17 +85,19 @@ class ImageStackGroups:
             values are the computed DotDict corresponding to each key
         """
 
-        uncomputed_groups = list(self.compute(aoi))
+        uncomputed_groups = list(self.compute(aoi, **kwargs))
         pbar = tqdm(
             uncomputed_groups,
             desc="Processing groups",
             bar_format="{desc:<18}{percentage:3.0f}%|{bar:10}{r_bar}",
             unit=" groups",
         )
-        computed_groups = {group_id: value.compute(aoi) for group_id, value in pbar}
+        computed_groups = {
+            group_id: value.compute(aoi, **kwargs) for group_id, value in pbar
+        }
         return computed_groups
 
-    def one(self, aoi: AOI) -> tuple:
+    def one(self, aoi: AOI, **kwargs) -> tuple:
         """
         A Tuple of (group key, DotDict) for one random group. Helpful for debugging.
 
@@ -108,8 +110,8 @@ class ImageStackGroups:
         -------
             tuple: (group key, DotDict) A tuple of a single group key and its corresponding computed DotDict
         """
-        group_name, value = next(self.compute(aoi))
-        return group_name, value.compute(aoi)
+        group_name, value = next(self.compute(aoi, **kwargs))
+        return group_name, value.compute(aoi, **kwargs)
 
 
 @dataclasses.dataclass

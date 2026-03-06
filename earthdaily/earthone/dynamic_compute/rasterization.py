@@ -85,6 +85,7 @@ class Rasterization(
         colormap=None,
         checkerboard=True,
         log_level=logging.DEBUG,
+        **kwargs,
     ):
         """
         A `.VectorRasterLayer` for this `Rasterization`.
@@ -135,6 +136,7 @@ class Rasterization(
             colormap=colormap,
             checkerboard=checkerboard,
             log_level=log_level,
+            **kwargs,
         )
 
     @classmethod
@@ -196,7 +198,8 @@ class Rasterization(
             methodparams["nclosest"] = nclosest
         columns = format_bands(columns)
 
-        verify_vector_product(product_id, columns)
+        vector_client = kwargs.pop("vector_client", None)
+        verify_vector_product(product_id, columns, vector_client=vector_client)
 
         columns = " ".join(columns)
 

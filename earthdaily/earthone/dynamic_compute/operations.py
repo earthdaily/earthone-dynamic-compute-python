@@ -18,6 +18,7 @@ import ipyleaflet  # type: ignore
 import numpy as np
 import requests
 
+from .eo_utils import add_bearer
 from .graft import client as graft_client
 from .pyversions import PythonVersion
 
@@ -252,6 +253,7 @@ def create_layer(
     classes: Optional[list] = None,
     vector_tile_layer_styles: Optional[dict] = None,
     raster: bool = True,
+    **kwargs,
 ):
     """Create an ipyleaflet raster or vector tile layer from a graft.
 
@@ -280,9 +282,10 @@ def create_layer(
     """
 
     # Create a layer from the graft
+    auth = kwargs.pop("auth", None) or eo.auth.Auth.get_default_auth()
     response = requests.post(
         f"{API_HOST}/layers/",
-        headers={"Authorization": eo.auth.Auth.get_default_auth().token},
+        headers={"Authorization": add_bearer(auth.token)},
         json={
             "graft": graft,
             "python_version": _python_major_minor_version,
@@ -324,8 +327,12 @@ def create_layer(
     if raster:
         lyr = ipyleaflet.TileLayer(name=name, url=url, max_zoom=26, max_native_zoom=26)
     else:
+        vector_client = kwargs.pop("vector_client", None)
         lyr = ipyleaflet.VectorTileLayer(
-            name=name, url=url, vector_tile_layer_styles=vector_tile_layer_styles
+            name=name,
+            url=url,
+            vector_tile_layer_styles=vector_tile_layer_styles,
+            client=vector_client,
         )
     return lyr
 
@@ -788,6 +795,8 @@ def compute_aoi(
 
     import earthdaily.earthone
 
+    auth = kwargs.pop("auth", None) or eo.auth.Auth.get_default_auth()
+
     if isinstance(
         aoi,
         (
@@ -815,7 +824,7 @@ def compute_aoi(
         # result in duplicates of existing layers
         response = requests.post(
             f"{API_HOST}/layers/",
-            headers={"Authorization": eo.auth.Auth.get_default_auth().token},
+            headers={"Authorization": add_bearer(auth.token)},
             json={
                 "graft": graft,
                 "python_version": _python_major_minor_version,
@@ -842,7 +851,7 @@ def compute_aoi(
     # Compute the AOI
     response = requests.post(
         f"{API_HOST}/layers/{layer_id}/aoi",
-        headers={"Authorization": eo.auth.Auth.get_default_auth().token},
+        headers={"Authorization": add_bearer(auth.token)},
         json={
             "geometry": geojson.Feature(geometry=aoi.geometry)["geometry"],
             "resolution": aoi.resolution,

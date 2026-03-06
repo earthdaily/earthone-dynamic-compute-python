@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 import earthdaily.earthone as eo
 import geojson
@@ -7,6 +8,7 @@ from shapely import Geometry
 from shapely.geometry import shape
 from shapely.ops import unary_union
 
+from .eo_utils import add_bearer
 from .operations import API_HOST, UnauthorizedUserError
 
 FENCE_TABLE = "earthdaily:org-geofencing"
@@ -15,8 +17,9 @@ FENCE_TABLE = "earthdaily:org-geofencing"
 class GeoFencing:
     """A class for interacting with an org's geofence."""
 
-    def __init__(self):
-        self.org = eo.auth.Auth.get_default_auth().payload["org"]
+    def __init__(self, auth: Optional[eo.auth.Auth] = None):
+        self.auth = auth or eo.auth.Auth.get_default_auth()
+        self.org = self.auth.payload["org"]
 
         self.fence_table = eo.vector.Table.get(
             product_id=FENCE_TABLE,
@@ -29,7 +32,7 @@ class GeoFencing:
     def check_cached_fence(self) -> bool:
         response = requests.get(
             f"{API_HOST}/cache/orgfuncs/geofencing/{self.org}",
-            headers={"Authorization": eo.auth.Auth.get_default_auth().token},
+            headers={"Authorization": add_bearer(self.auth.token)},
         )
         return response.content is not "".encode()
 
@@ -48,7 +51,7 @@ class GeoFencing:
         files = {"fence": ("geofence.json", as_bytes, "application/json")}
         response = requests.post(
             f"{API_HOST}/cache/orgfuncs/geofencing/{self.org}",
-            headers={"Authorization": eo.auth.Auth.get_default_auth().token},
+            headers={"Authorization": add_bearer(self.auth.token)},
             files=files,
         )
         try:
@@ -65,7 +68,7 @@ class GeoFencing:
     def get_cached_fence(self) -> Geometry:
         response = requests.get(
             f"{API_HOST}/cache/orgfuncs/geofencing/{self.org}",
-            headers={"Authorization": eo.auth.Auth.get_default_auth().token},
+            headers={"Authorization": add_bearer(self.auth.token)},
         )
         if response.content is not "".encode():
             fence_gj = json.loads(response.content.decode())

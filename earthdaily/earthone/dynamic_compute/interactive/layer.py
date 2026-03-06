@@ -25,6 +25,7 @@ from earthdaily.earthone.core.vector.tiles import create_layer
 from pandas.api.types import is_numeric_dtype
 
 from ..datetime_utils import normalize_datetime_or_none
+from ..eo_utils import add_bearer
 from ..operations import (
     API_HOST,
     UnauthorizedUserError,
@@ -96,8 +97,9 @@ class VectorTileLayer(ipyleaflet.VectorTileLayer):
     def __init__(self, product_id, **kwargs):
 
         # Get the layer URL from Platform
-        product_name = eo.vector.Table.get(product_id).name
-        lyr = create_layer(product_id, product_name)
+        vector_client = kwargs.pop("vector_client", None)
+        product_name = eo.vector.Table.get(product_id, client=vector_client).name
+        lyr = create_layer(product_id, product_name, client=vector_client)
         super().__init__(name=product_name, url=lyr.url, **kwargs)
 
         self.product_id = product_id
@@ -467,6 +469,7 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
         if parameter_overrides is None:
             parameter_overrides = {}
 
+        self._auth = kwargs.pop("auth", None) or eo.auth.Auth.get_default_auth()
         self._url_updates_blocked = False
         super().__init__(**kwargs)
 
@@ -599,7 +602,7 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
         # Create a layer from the graft
         response = requests.post(
             f"{API_HOST}/layers/",
-            headers={"Authorization": eo.auth.Auth.get_default_auth().token},
+            headers={"Authorization": add_bearer(self._auth.token)},
             json={
                 "graft": self.imagery,
                 "python_version": _python_major_minor_version,
@@ -623,7 +626,7 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
             # Create an alpha layer from the graft
             alpha_response = requests.post(
                 f"{API_HOST}/layers/",
-                headers={"Authorization": eo.auth.Auth.get_default_auth().token},
+                headers={"Authorization": add_bearer(self._auth.token)},
                 json={
                     "graft": self.alpha,
                     "python_version": _python_major_minor_version,
@@ -952,6 +955,7 @@ class VectorRasterLayer(DynamicComputeLayer):
         log_level=logging.DEBUG,
         **kwargs,
     ):
+        self._auth = kwargs.pop("auth", None) or eo.auth.Auth.get_default_auth()
         self._url_updates_blocked = False
         super(DynamicComputeLayer, self).__init__(**kwargs)
         with self.hold_url_updates():
@@ -1014,7 +1018,7 @@ class VectorRasterLayer(DynamicComputeLayer):
         # Create a layer from the graft
         response = requests.post(
             f"{API_HOST}/layers/",
-            headers={"Authorization": eo.auth.Auth.get_default_auth().token},
+            headers={"Authorization": add_bearer(self._auth.token)},
             json={
                 "graft": self.imagery,
                 "python_version": _python_major_minor_version,
