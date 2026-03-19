@@ -4,6 +4,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Added
+
+- Added `NumericProxy` types that can be used as proxies for constants.
+- Added `obj_type` to serialized objects, so it can be determined what the object is.
+
 ## v2.4.0 - 03/09/2026
 
 ### Added

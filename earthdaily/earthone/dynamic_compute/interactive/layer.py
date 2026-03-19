@@ -935,7 +935,7 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
     def _ipython_display_(self):
         param_set = self.parameters
         if param_set:
-            widget = param_set.widget
+            widget = getattr(param_set, "widget", None)
             if widget and len(widget.children) > 0:
                 widget._ipython_display_()
 

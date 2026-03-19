@@ -60,7 +60,16 @@ class Datetime(Proxytype):
     allowed_types = Union[str, datetime.date, datetime.datetime]
 
 
+class NumericProxy(Proxytype):
+    # Kelly note: this is currently unverified anywhere, but we
+    # may want to use the `allowed_types` property  in the
+    # future to ensure the type of data being passed in is allowed
+    allowed_types = Union[int, float]
+
+
 class parameter:
+    _RETURN_PRECEDENCE = 0
+
     def __init__(self, name: str, _type: Type[Proxytype]):
         assert isinstance(
             name, str

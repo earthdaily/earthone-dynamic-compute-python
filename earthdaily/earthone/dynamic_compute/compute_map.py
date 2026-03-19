@@ -2,6 +2,7 @@
 # https://peps.python.org/pep-0673/
 from __future__ import annotations
 
+import dataclasses
 import json
 import sys
 from abc import ABC, abstractclassmethod, abstractmethod
@@ -22,7 +23,10 @@ from .operations import (
     _resolution_graft_x,
     _resolution_graft_y,
     compute_aoi,
+    reset_graft,
 )
+from .proxies import parameter
+from .serialization import BaseSerializationModel
 
 
 class DotDict(dict):
@@ -156,6 +160,20 @@ def morphology(*args, **kwargs):
     return None
 
 
+@dataclasses.dataclass
+class ComputeMapSerializationModel(BaseSerializationModel):
+    """State representation of a ComputeMap instance"""
+
+    graft: Dict
+    obj_type: str
+
+    @classmethod
+    def from_json(cls, data: str) -> ComputeMapSerializationModel:
+        base_obj = super().from_json(data)
+        base_obj.graft = reset_graft(base_obj.graft)
+        return base_obj
+
+
 class ComputeMap(dict, ABC):
     """
     A wrapper class to support operations on grafts. Proxy objects should all be
@@ -240,21 +258,24 @@ class ComputeMap(dict, ABC):
 
         return "\n".join(output)
 
-    def __init__(self, d):
+    def __init__(self, graft, obj_type=None):
         """
         Initialize a ComputeMap instance from a dictionary. If the
         dictionary is not a valid graft, raise a ValueError
 
         Parameters
         ----------
-        d : dict
+        graft : dict
             Graft from which we intialize the compute map
         """
 
-        if not graft_syntax.is_graft(d):
-            raise ValueError("Invalid graft: " + json.dumps(d))
+        if obj_type is not None and obj_type != "ComputeMap":
+            raise ValueError(f"Object {obj_type} is not a ComputeMap")
 
-        super().__init__(d)
+        if not graft_syntax.is_graft(graft):
+            raise ValueError("Invalid graft: " + json.dumps(graft))
+
+        super().__init__(graft)
         self.return_val = "all"
         self.init_args = {}
 
@@ -316,17 +337,29 @@ class ComputeMap(dict, ABC):
 
     @abstractmethod
     def serialize(self):
-        """Abstract method for serializing this object's state"""
+        """Serializes this object into a json representation"""
 
-        err_msg = "Abstract method, must be implemented by subclasses"
-        raise NotImplementedError(err_msg)
+        return ComputeMapSerializationModel(
+            graft=dict(self),
+            obj_type="ComputeMap",
+        ).json()
 
     @abstractclassmethod
-    def deserialize(cls):
-        """Abstract method for deserializing state into an instance of this object"""
+    def deserialize(cls, data: str) -> ComputeMap:
+        """Deserializes into this object from json
 
-        err_msg = "Abstract method, must be implemented by subclasses"
-        raise NotImplementedError(err_msg)
+        Parameters
+        ----------
+        data : str
+            The json representation of the object state
+
+        Returns
+        -------
+        ComputeMap
+            An instance of this object with the state stored in data
+        """
+
+        return cls(**ComputeMapSerializationModel.from_json(data).dict())
 
     def _extra_init_args(self):
         """
@@ -361,6 +394,9 @@ def as_compute_map(a: Union[Number, Dict, ComputeMap, np.ndarray, List]) -> Comp
         if isinstance(a, list):
             a = np.array(a)
         return ComputeMap(graft_client.value_graft(a))
+
+    if isinstance(a, parameter):
+        return a.name
 
     if not isinstance(a, ComputeMap):
         # `a` is a Dict, but not a ComputeMap. If `a` it isn't a graft,

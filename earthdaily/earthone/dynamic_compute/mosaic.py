@@ -76,6 +76,7 @@ class MosaicSerializationModel(BaseSerializationModel):
     predicate_filter: Optional[str] = None
     sort_by: Optional[str] = None
     ascending: Optional[bool] = None
+    obj_type: Optional[str] = None
 
     @classmethod
     def from_json(cls, data: str) -> MosaicSerializationModel:
@@ -118,6 +119,7 @@ class Mosaic(
         predicate_filter: Optional[str] = None,
         sort_by: Optional[str] = None,
         ascending: Optional[bool] = None,
+        obj_type: Optional[str] = None,
     ):
         """
         Initialize a new instance of Mosaic. Users should rely on
@@ -147,6 +149,9 @@ class Mosaic(
             warnings.warn(
                 "Both dates and image_ids were provided, ignoring start_datetime and end_datetime"
             )
+
+        if obj_type is not None and obj_type != "Mosaic":
+            raise ValueError(f"Object {obj_type} is not a Mosaic")
 
         set_cache_id(graft)
         super().__init__(graft)
@@ -644,6 +649,7 @@ class Mosaic(
             bands=self.bands,
             start_datetime=self.start_datetime,
             end_datetime=self.end_datetime,
+            obj_type="Mosaic",
         ).json()
 
     def update_resampler(self, resampler: eo.catalog.ResampleAlgorithm) -> Mosaic:
