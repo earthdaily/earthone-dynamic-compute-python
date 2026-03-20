@@ -215,7 +215,7 @@ def reset_graft(graft: Dict) -> Dict:
     return _normalize_graft(graft, counter=graft_client.guid)
 
 
-def set_cache_id(graft: Dict):
+def set_cache_id(graft: Dict, auth=None):
     """Set the cache ID of an operation.
 
     This is called when layers are created, as it is expected that these layers will be re-used in future operations.
@@ -226,8 +226,16 @@ def set_cache_id(graft: Dict):
         The graft where the cache ID will be set.
     """
 
+    if auth is None:
+        auth = eo.auth.Auth.get_default_auth()
+    org = auth.payload["org"]
+
     normalized_graft = _normalize_graft(graft)
-    cache_id = hashlib.sha256(bytes(json.dumps(normalized_graft), "utf-8")).hexdigest()
+    cache_id = (
+        hashlib.sha256(bytes(json.dumps(normalized_graft), "utf-8")).hexdigest()
+        + "-"
+        + org
+    )
 
     returned_key = graft["returns"]
     returned_op = graft[returned_key]

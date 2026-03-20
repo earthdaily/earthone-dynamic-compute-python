@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "earthdaily-earthone-dynamic-compute"
-version = "2.4.0"
+version = "2.4.2"
 description = ""
 license = "Apache-2.0"
 authors = ["EarthDaily"]

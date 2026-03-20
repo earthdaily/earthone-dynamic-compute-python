@@ -34,6 +34,8 @@ class GeoFencing:
             f"{API_HOST}/cache/orgfuncs/geofencing/{self.org}",
             headers={"Authorization": add_bearer(self.auth.token)},
         )
+        if response.status_code != 200:
+            return json.loads(response.content.decode())
         return response.content is not "".encode()
 
     def cache_fence(self):
@@ -70,6 +72,8 @@ class GeoFencing:
             f"{API_HOST}/cache/orgfuncs/geofencing/{self.org}",
             headers={"Authorization": add_bearer(self.auth.token)},
         )
+        if response.status_code != 200:
+            return json.loads(response.content.decode())
         if response.content is not "".encode():
             fence_gj = json.loads(response.content.decode())
             return shape(fence_gj)
