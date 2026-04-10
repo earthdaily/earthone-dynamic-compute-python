@@ -20,7 +20,8 @@ class GeoFencing:
         self.auth = auth or eo.auth.Auth.get_default_auth()
         self.org = self.auth.payload["org"]
 
-        self.fence_table = gpd.GeoDataFrame.from_features(table)
+        table_gpd = gpd.GeoDataFrame.from_features(table)
+        self.fence_table = table_gpd.loc[table_gpd["orgname"] == self.org]
 
     def check_fence(self) -> bool:
         return self.fence_table.shape[0] > 0
