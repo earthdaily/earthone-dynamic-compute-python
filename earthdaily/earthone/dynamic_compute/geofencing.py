@@ -3,6 +3,7 @@ from typing import Optional
 
 import earthdaily.earthone as eo
 import geojson
+import geopandas as gpd
 import requests
 from shapely import Geometry
 from shapely.geometry import shape
@@ -11,20 +12,15 @@ from shapely.ops import unary_union
 from .eo_utils import add_bearer
 from .operations import API_HOST, UnauthorizedUserError
 
-FENCE_TABLE = "earthdaily:org-geofencing"
-
 
 class GeoFencing:
     """A class for interacting with an org's geofence."""
 
-    def __init__(self, auth: Optional[eo.auth.Auth] = None):
+    def __init__(self, table: dict, auth: Optional[eo.auth.Auth] = None):
         self.auth = auth or eo.auth.Auth.get_default_auth()
         self.org = self.auth.payload["org"]
 
-        self.fence_table = eo.vector.Table.get(
-            product_id=FENCE_TABLE,
-            property_filter=eo.utils.Properties().orgname == self.org,
-        ).collect()
+        self.fence_table = gpd.GeoDataFrame.from_features(table)
 
     def check_fence(self) -> bool:
         return self.fence_table.shape[0] > 0
