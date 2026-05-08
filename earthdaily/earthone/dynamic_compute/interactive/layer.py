@@ -597,7 +597,7 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
             return ""
 
         # Make the layer cacheable
-        set_cache_id(self.imagery)
+        set_cache_id(self.imagery, self._auth)
 
         # Create a layer from the graft
         response = requests.post(
@@ -1013,7 +1013,7 @@ class VectorRasterLayer(DynamicComputeLayer):
         scales = [scale for scale in scales if scale != [None, None]]
 
         # Make the layer cacheable
-        set_cache_id(self.imagery)
+        set_cache_id(self.imagery, self._auth)
 
         # Create a layer from the graft
         response = requests.post(
