@@ -235,6 +235,7 @@ class ImageStack(
         sort_by: Optional[str] = None,
         ascending: Optional[bool] = None,
         obj_type: Optional[str] = None,
+        auth: Optional[eo.auth.auth.Auth] = None,
     ):
         """
         Initialize a new instance of ImageStack. Users should rely on
@@ -264,7 +265,7 @@ class ImageStack(
         assert pad >= 0
         assert resampler in eo.catalog.ResampleAlgorithm
 
-        set_cache_id(full_graft)
+        set_cache_id(full_graft, auth=auth)
         super().__init__(full_graft)
         self.bands = bands
         self.product_id = str(product_id)
@@ -328,9 +329,14 @@ class ImageStack(
             New ImageStack object.
         """
 
-        _ = get_product_or_fail(
-            product_id, catalog_client=kwargs.pop("catalog_client", None)
-        )
+        auth = kwargs.pop("auth", None)
+        if auth is not None:
+            catalog_client = eo.catalog.CatalogClient(auth=auth)
+        else:
+            catalog_client = kwargs.pop("catalog_client", None)
+            auth = catalog_client.auth if catalog_client else None
+
+        _ = get_product_or_fail(product_id, catalog_client=catalog_client)
         start_datetime = normalize_datetime(start_datetime)
         end_datetime = normalize_datetime(end_datetime)
 
@@ -390,6 +396,7 @@ class ImageStack(
             product_id,
             start_datetime,
             end_datetime,
+            auth=auth,
         )
 
     def filter_by_id(self, id_list: List[str]) -> ImageStack:

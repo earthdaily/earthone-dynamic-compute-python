@@ -120,6 +120,7 @@ class Mosaic(
         sort_by: Optional[str] = None,
         ascending: Optional[bool] = None,
         obj_type: Optional[str] = None,
+        auth: Optional[eo.auth.auth.Auth] = None,
     ):
         """
         Initialize a new instance of Mosaic. Users should rely on
@@ -153,7 +154,7 @@ class Mosaic(
         if obj_type is not None and obj_type != "Mosaic":
             raise ValueError(f"Object {obj_type} is not a Mosaic")
 
-        set_cache_id(graft)
+        set_cache_id(graft, auth=auth)
         super().__init__(graft)
         self.bands = bands
         self.product_id = product_id
@@ -304,9 +305,14 @@ class Mosaic(
             New mosaic object.
         """
 
-        _ = get_product_or_fail(
-            product_id, catalog_client=kwargs.pop("catalog_client", None)
-        )
+        auth = kwargs.pop("auth", None)
+        if auth is not None:
+            catalog_client = eo.catalog.CatalogClient(auth=auth)
+        else:
+            catalog_client = kwargs.pop("catalog_client", None)
+            auth = catalog_client.auth if catalog_client else None
+
+        _ = get_product_or_fail(product_id, catalog_client=catalog_client)
         start_datetime = normalize_datetime_or_none(start_datetime)
         end_datetime = normalize_datetime_or_none(end_datetime)
 
@@ -358,7 +364,7 @@ class Mosaic(
             **kwargs,
         )
 
-        return cls(graft, bands, product_id, start_datetime, end_datetime)
+        return cls(graft, bands, product_id, start_datetime, end_datetime, auth=auth)
 
     @classmethod
     def from_image_ids(
@@ -383,9 +389,16 @@ class Mosaic(
             New mosaic object.
         """
 
+        auth = kwargs.pop("auth", None)
+        if auth is not None:
+            catalog_client = eo.catalog.CatalogClient(auth=auth)
+        else:
+            catalog_client = kwargs.pop("catalog_client", None)
+            auth = catalog_client.auth if catalog_client else None
+
         formatted_bands = " ".join(format_bands(bands))
         image_ids = json.dumps(image_ids)
-        return cls(from_image_ids(image_ids, formatted_bands))
+        return cls(from_image_ids(image_ids, formatted_bands), auth=auth)
 
     def pick_bands(self, bands: Union[str, List[str]]) -> Mosaic:
         """
