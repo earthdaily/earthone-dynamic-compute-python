@@ -160,6 +160,8 @@ class Mosaic(
         self.product_id = product_id
         self.start_datetime = start_datetime
         self.end_datetime = end_datetime
+        # Save auth to pass on
+        self._auth = auth
 
     def tile_layer(
         self,
@@ -239,7 +241,7 @@ class Mosaic(
         )
 
         # we don't have a kwargs to hide this, so hide it in parameter_overrides
-        auth = parameter_overrides.pop("auth", None)
+        auth = parameter_overrides.pop("auth", self._auth)
         return DynamicComputeLayer(
             self,
             name=name,
@@ -429,7 +431,8 @@ class Mosaic(
                     "pick_bands",
                     bands=json.dumps(format_bands(bands)),
                     other_obj=None,
-                )
+                ),
+                auth=self._auth,
             )
 
         args = op_args(return_value)
@@ -458,7 +461,8 @@ class Mosaic(
                 "rename_bands",
                 bands=json.dumps(format_bands(bands)),
                 other_obj=None,
-            )
+            ),
+            auth=self._auth,
         )
 
     def unpack_bands(
@@ -498,7 +502,7 @@ class Mosaic(
         masked: Mosaic
             Masked mosaic.
         """
-        return Mosaic(_mask_op(self, mask))
+        return Mosaic(_mask_op(self, mask), auth=self._auth)
 
     def concat_bands(self, other: Union[Mosaic, str, List[str]]) -> Mosaic:
         """
@@ -526,7 +530,8 @@ class Mosaic(
                 "concat_bands",
                 bands=None,
                 other_obj=other,
-            )
+            ),
+            auth=self._auth,
         )
 
     def clip(self, lo: Number, hi: Number) -> Mosaic:
@@ -548,7 +553,7 @@ class Mosaic(
         if not lo < hi:
             raise Exception(f"Lower bound ({lo}) is not less than upper bound ({hi})")
 
-        return Mosaic(_clip_data(self, lo, hi))
+        return Mosaic(_clip_data(self, lo, hi), auth=self._auth)
 
     def filled(self, fill_val) -> Mosaic:
         """
@@ -564,7 +569,7 @@ class Mosaic(
         bounded: Mosaic
             New Mosaic object that is bounded
         """
-        return Mosaic(_fill_mask(self, fill_val))
+        return Mosaic(_fill_mask(self, fill_val), auth=self._auth)
 
     def reduce(self, reducer: str, axis: str = "bands"):
         """
@@ -655,7 +660,7 @@ class Mosaic(
 
     def serialize(self):
         """Serializes this object into a json representation"""
-
+        # Do not include auth in the serialization
         return MosaicSerializationModel(
             graft=dict(self),
             product_id=self.product_id,
@@ -696,6 +701,7 @@ class Mosaic(
             self.product_id,
             self.start_datetime,
             self.end_datetime,
+            auth=self._auth,
         )
 
     def gradient_x(self, resolution: Optional[float] = None) -> Mosaic:
@@ -711,7 +717,7 @@ class Mosaic(
         if resolution is None:
             resolution = ComputeMap(_resolution_graft_x())
 
-        return Mosaic(gradient_x(dict(self))) / resolution
+        return Mosaic(gradient_x(dict(self)), auth=self._auth) / resolution
 
     def gradient_y(self, resolution: Optional[float] = None) -> Mosaic:
         """
@@ -725,7 +731,7 @@ class Mosaic(
         if resolution is None:
             resolution = ComputeMap(_resolution_graft_y())
 
-        return Mosaic(gradient_y(dict(self))) / resolution
+        return Mosaic(gradient_y(dict(self)), auth=self._auth) / resolution
 
     def slope(
         self, resolution_x: Optional[float] = None, resolution_y: Optional[float] = None
@@ -763,7 +769,7 @@ class Mosaic(
         grad_y = self.gradient_y(resolution=resolution_y)
         grad_x = self.gradient_x(resolution=resolution_x)
 
-        aspect = Mosaic(arctan2(grad_x, -grad_y)) * (180 / pi)
+        aspect = Mosaic(arctan2(grad_x, -grad_y), auth=self._auth) * (180 / pi)
 
         return aspect
 
@@ -832,7 +838,8 @@ class Mosaic(
                 size_y=size_y,
                 res_x=res_x,
                 res_y=res_y,
-            )
+            ),
+            auth=self._auth,
         )
 
     def morphology(
@@ -871,7 +878,8 @@ class Mosaic(
                     size,
                     _resolution_graft_x(),
                     _resolution_graft_y(),
-                )
+                ),
+                auth=self._auth,
             )
         else:
             return Mosaic(
@@ -879,7 +887,8 @@ class Mosaic(
                     dict(self),
                     operation,
                     size,
-                )
+                ),
+                auth=self._auth,
             )
 
     @classmethod

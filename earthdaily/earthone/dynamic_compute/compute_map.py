@@ -258,7 +258,7 @@ class ComputeMap(dict, ABC):
 
         return "\n".join(output)
 
-    def __init__(self, graft, obj_type=None):
+    def __init__(self, graft, obj_type=None, auth=None):
         """
         Initialize a ComputeMap instance from a dictionary. If the
         dictionary is not a valid graft, raise a ValueError
@@ -278,15 +278,19 @@ class ComputeMap(dict, ABC):
         super().__init__(graft)
         self.return_val = "all"
         self.init_args = {}
+        self._auth = auth
 
     def __getattr__(self, attr):
         # Provide a way to evaluate to *just* the raster data or *just* the properties.
         # This is in support of a Workflows like interface.
-        if attr not in ["properties", "ndarray"]:
+        if attr not in ["properties", "ndarray", "_auth"]:
             try:
                 return super().__getattr__(self, attr)
             except:  # noqa E722
                 raise AttributeError(f"{attr} is not supported by dynamic-compute")
+
+        if attr == "_auth":
+            return self._auth
 
         new_compute_map = copy(self)
         new_compute_map.return_val = attr
@@ -483,28 +487,34 @@ class AddMixin:
     def __add__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "add", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "add", as_compute_map(other)), auth=self._auth
+        )
 
     def __radd__(
         self, other: Union[Number, List, np.ndarray, ComputeMap]
     ) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "radd", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "radd", as_compute_map(other)), auth=self._auth
+        )
 
 
 class SubMixin:
     def __sub__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "sub", other))
+        return return_type(_math_op(self, "sub", other), auth=self._auth)
 
     def __rsub__(
         self, other: Union[Number, List, np.ndarray, ComputeMap]
     ) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "rsub", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "rsub", as_compute_map(other), auth=self._auth)
+        )
 
 
 class MulMixin:

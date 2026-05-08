@@ -279,6 +279,7 @@ class ImageStack(
             "pad": pad,
             "resampler": resampler,
         }
+        self._auth = auth
 
         if obj_type is not None and obj_type != "ImageStack":
             raise ValueError(f"Object {obj_type} is not an ImageStack")
@@ -413,7 +414,9 @@ class ImageStack(
         ImageStack
             New ImageStack object.
         """
-        return ImageStack(filter_by_id(dict(self), json.dumps(list(id_list))))
+        return ImageStack(
+            filter_by_id(dict(self), json.dumps(list(id_list))), auth=self._auth
+        )
 
     def filter(self, pred: eo.catalog.properties.OpExpression) -> ImageStack:
         """
@@ -435,7 +438,7 @@ class ImageStack(
         except Exception:
             encoded_func = encode_function(pred)
 
-        return ImageStack(filter_data(dict(self), encoded_func))
+        return ImageStack(filter_data(dict(self), encoded_func), auth=self._auth)
 
     def get(self, idx: int) -> Mosaic:
         """
@@ -455,7 +458,7 @@ class ImageStack(
         if not isinstance(idx, int):
             raise Exception("Index must be an integer")
 
-        return Mosaic(_index(idx, self))
+        return Mosaic(_index(idx, self), auth=self._auth)
 
     def length(self):
         """
@@ -496,6 +499,7 @@ class ImageStack(
             _band_op(self, "pick_bands", bands=json.dumps(bands), other_obj=None),
             bands=bands,
             product_id=self.product_id,
+            auth=self._auth,
         )
 
     def update_resampler(self, resampler: eo.catalog.ResampleAlgorithm) -> ImageStack:
@@ -523,6 +527,7 @@ class ImageStack(
             self.start_datetime,
             self.end_datetime,
             resampler=resampler,
+            auth=self._auth,
         )
 
     def unpack_bands(
@@ -556,6 +561,7 @@ class ImageStack(
             _band_op(self, "rename_bands", bands=json.dumps(bands), other_obj=None),
             bands=bands,
             product_id=self.product_id,
+            auth=self._auth,
         )
 
     def concat_bands(self, other: ImageStack) -> ImageStack:
@@ -588,6 +594,7 @@ class ImageStack(
         return ImageStack(
             _band_op(self, "concat_bands", bands=None, other_obj=other),
             bands=new_bands,
+            auth=self._auth,
         )
 
     def mask(self, mask: ComputeMap) -> ImageStack:
@@ -610,6 +617,7 @@ class ImageStack(
             _mask_op(self, mask),
             bands=self.bands,
             product_id=self.product_id,
+            auth=self._auth,
         )
 
     def clip(self, lo: Number, hi: Number) -> ImageStack:
@@ -631,7 +639,7 @@ class ImageStack(
         if not lo < hi:
             raise Exception(f"Lower bound ({lo}) is not less than upper bound ({hi})")
 
-        return ImageStack(_clip_data(self, lo, hi))
+        return ImageStack(_clip_data(self, lo, hi), auth=self._auth)
 
     def filled(self, fill_val) -> Mosaic:
         """
@@ -647,7 +655,7 @@ class ImageStack(
         filled: ImageStack
             New ImageStack object that is filled
         """
-        return ImageStack(_fill_mask(self, fill_val))
+        return ImageStack(_fill_mask(self, fill_val), auth=self._auth)
 
     def reduce(self, reducer: str, axis: str = "images") -> Union[Mosaic, ImageStack]:
         """
@@ -681,7 +689,7 @@ class ImageStack(
 
     def serialize(self):
         """Serializes this object into a json representation"""
-
+        # Do not include auth in the serialization
         return ImageStackSerializationModel(
             full_graft=dict(self),
             product_id=self.product_id,
