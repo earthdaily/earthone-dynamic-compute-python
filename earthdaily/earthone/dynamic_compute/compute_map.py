@@ -521,14 +521,18 @@ class MulMixin:
     def __mul__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "mul", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "mul", as_compute_map(other)), auth=self._auth
+        )
 
     def __rmul__(
         self, other: Union[Number, List, np.ndarray, ComputeMap]
     ) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "rmul", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "rmul", as_compute_map(other)), auth=self._auth
+        )
 
 
 class TrueDivMixin:
@@ -537,14 +541,18 @@ class TrueDivMixin:
     ) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "truediv", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "truediv", as_compute_map(other)), auth=self._auth
+        )
 
     def __rtruediv__(
         self, other: Union[Number, List, np.ndarray, ComputeMap]
     ) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "rtruediv", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "rtruediv", as_compute_map(other)), auth=self._auth
+        )
 
 
 class FloorDivMixin:
@@ -553,14 +561,18 @@ class FloorDivMixin:
     ) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "floordiv", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "floordiv", as_compute_map(other)), auth=self._auth
+        )
 
     def __rfloordiv__(
         self, other: Union[Number, List, np.ndarray, ComputeMap]
     ) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "rfloordiv", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "rfloordiv", as_compute_map(other)), auth=self._auth
+        )
 
 
 class SignedMixin:
@@ -568,89 +580,101 @@ class SignedMixin:
 
         # extra_init_args = _extra_init_args(self)
         return_type = type(self)
-        return return_type(_math_op(self, "_abs"))
+        return return_type(_math_op(self, "_abs"), auth=self._auth)
 
     def __neg__(self) -> ComputeMap:
 
         # extra_init_args = _extra_init_args(self)
         return_type = type(self)
-        return return_type(_math_op(self, "neg"))
+        return return_type(_math_op(self, "neg"), auth=self._auth)
 
 
 class ExpMixin:
     def __pow__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "_pow", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "_pow", as_compute_map(other)), auth=self._auth
+        )
 
     def __rpow__(
         self, other: Union[Number, List, np.ndarray, ComputeMap]
     ) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "rpow", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "rpow", as_compute_map(other)), auth=self._auth
+        )
 
 
 class CompareMixin:
     def __eq__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "eq", as_compute_map(other)))
+        return return_type(_math_op(self, "eq", as_compute_map(other)), auth=self._auth)
 
     def __ne__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "ne", as_compute_map(other)))
+        return return_type(_math_op(self, "ne", as_compute_map(other)), auth=self._auth)
 
     def __gt__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "gt", as_compute_map(other)))
+        return return_type(_math_op(self, "gt", as_compute_map(other)), auth=self._auth)
 
     def __ge__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "ge", as_compute_map(other)))
+        return return_type(_math_op(self, "ge", as_compute_map(other)), auth=self._auth)
 
     def __lt__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "lt", as_compute_map(other)))
+        return return_type(_math_op(self, "lt", as_compute_map(other)), auth=self._auth)
 
     def __le__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "le", as_compute_map(other)))
+        return return_type(_math_op(self, "le", as_compute_map(other)), auth=self._auth)
 
 
 class LogicalMixin:
     def __and__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "_and", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "_and", as_compute_map(other)), auth=self._auth
+        )
 
     def __rand__(
         self, other: Union[Number, List, np.ndarray, ComputeMap]
     ) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "rand", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "rand", as_compute_map(other)), auth=self._auth
+        )
 
     def __or__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "_or", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "_or", as_compute_map(other)), auth=self._auth
+        )
 
     def __ror__(self, other: Union[Number, List, np.ndarray, ComputeMap]) -> ComputeMap:
 
         return_type = type_max(type(self), type(other))
-        return return_type(_math_op(self, "ror", as_compute_map(other)))
+        return return_type(
+            _math_op(self, "ror", as_compute_map(other)), auth=self._auth
+        )
 
     def __invert__(self) -> ComputeMap:
 
         return_type = type(self)
 
-        return return_type(_math_op(self, "invert"))
+        return return_type(_math_op(self, "invert"), auth=self._auth)
 
 
 class NumpyReductionMixin:

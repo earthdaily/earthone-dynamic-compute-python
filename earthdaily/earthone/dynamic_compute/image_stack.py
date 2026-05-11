@@ -279,6 +279,7 @@ class ImageStack(
             "pad": pad,
             "resampler": resampler,
         }
+        # Save auth to pass on
         self._auth = auth
 
         if obj_type is not None and obj_type != "ImageStack":
