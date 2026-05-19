@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Bug fixes for passing a custom `auth` into Mosaics.
 - Fixed a bug when calling `.pick_bands` on a simple operation containing `dc.paramters`.
 
+### Changed
+
+- The OpenStreetMap attribution link now opens in a new tab.
+
 ## v2.4.2 - 03/23/2026
 
 ### Changed

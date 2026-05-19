@@ -149,6 +149,30 @@ class MapApp(widgets.VBox):
     def __init__(self, map=None, layer_controller_list=None, map_controller=None):
         if map is None:
             map = Map()
+            att = '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" >OpenStreetMap</a> contributors'
+            layers = list(map.layers)
+            layers[0] = ipyleaflet.TileLayer(
+                attribution=att,
+                base=True,
+                max_zoom=19,
+                min_zoom=1,
+                name="OpenStreetMap.Mapnik",
+                options=[
+                    "attribution",
+                    "bounds",
+                    "detect_retina",
+                    "max_native_zoom",
+                    "max_zoom",
+                    "min_native_zoom",
+                    "min_zoom",
+                    "no_wrap",
+                    "tile_size",
+                    "tms",
+                    "zoom_offset",
+                ],
+                url="https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            )
+            map.layers = layers
             map.add_control(ipyleaflet.FullScreenControl())
             map.add_control(ipyleaflet.ScaleControl(position="bottomleft"))
 
@@ -275,7 +299,7 @@ class MapApp(widgets.VBox):
 
 class Map(ipyleaflet.Map):
     """
-    Subclass of ``ipyleaflet.Map`` with Workflows defaults and extra helper methods.
+    Subclass of ``ipyleaflet.Map`` with Dynamic-Compute defaults and extra helper methods.
 
     Attributes
     ----------
