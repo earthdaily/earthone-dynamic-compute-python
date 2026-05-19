@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - Bug fixes for passing a custom `auth` into Mosaics.
+- Fixed a bug when calling `.pick_bands` on a simple operation containing `dc.paramters`.
 
 ## v2.4.2 - 03/23/2026
 

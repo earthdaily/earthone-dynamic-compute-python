@@ -5,7 +5,7 @@ from typing import Union
 
 import dateutil
 
-from .proxies import Datetime, parameter
+from .proxies import Datetime, is_datetime_parameter_name, parameter
 
 
 def normalize_datetime(value: Union[str, datetime.date, datetime.datetime]) -> str:
@@ -27,6 +27,11 @@ def normalize_datetime(value: Union[str, datetime.date, datetime.datetime]) -> s
             value.type is Datetime
         ), f"Proxytypes for dates must be dc.Datetime, not {value.type}"
         return value
+
+    # Note date strings can be in many forms, e.g. "2020-01-02", "01/01/2020", "3rd of May 2001"
+    # so we need to account numerous options
+    if isinstance(value, str) and is_datetime_parameter_name(value):
+        return parameter(value, Datetime)
 
     if isinstance(value, str):
         value = dateutil.parser.parse(value)

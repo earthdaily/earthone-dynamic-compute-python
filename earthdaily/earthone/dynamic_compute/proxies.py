@@ -1,5 +1,12 @@
 import datetime
+import re
 from typing import Type, Union
+
+PARAM_NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+
+def is_datetime_parameter_name(name: str) -> bool:
+    return bool(PARAM_NAME_RE.match(name))
 
 
 class Proxytype:
@@ -74,6 +81,11 @@ class parameter:
         assert isinstance(
             name, str
         ), f"Names must be strings, provided name was {type(name)} type"
+        if _type is Datetime:
+            assert is_datetime_parameter_name(name), (
+                "Datetime parameter names must be valid identifiers "
+                "(e.g. 'start', 'end_date'), not date literals or strings with spaces."
+            )
         assert (
             _type != Proxytype
         ), "Cannot use Proxytype as type, you need to specify a defined type"
