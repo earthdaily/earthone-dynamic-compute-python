@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 
 - The OpenStreetMap attribution link now opens in a new tab.
+- Optimize `matplotlib` import in `interactive/layers.py` to avoid unnecessarily importing `pyplot`.
 
 ## v2.4.2 - 03/23/2026
 

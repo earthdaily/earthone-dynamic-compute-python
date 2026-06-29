@@ -17,7 +17,6 @@ import geopandas as gpd
 import ipyleaflet
 import ipywidgets as widgets
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 import requests
 import traitlets
@@ -676,10 +675,10 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
             return
         if self.colormap:
             # If a colormap is defined, use it to define colors. This will override user defined colors.
-            cmap = plt.get_cmap(self.colormap, len(self.classes))
+            cmap = mpl.colormaps[self.colormap].resampled(len(self.classes))
         elif "color" not in self.classes[0].keys():
             # Colormap is not defined, but colors are not either
-            cmap = plt.get_cmap("viridis", len(self.classes))
+            cmap = mpl.colormaps["viridis"].resampled(len(self.classes))
         else:
             # User provided colors with no map, use them.
             return
