@@ -19,7 +19,7 @@ import earthdaily.earthone.dynamic_compute as dc
 
 m = dc.map
 m.zoom = 14
-m.center = (43.4783, -110.7506)
+m.center = (43.4783, -110.7508)
 m
 ```
 
