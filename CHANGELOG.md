@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
-- Bug fixes for passing a custom `auth` into Mosaics.
+- Bug fixes for passing custom `earthdaily.earthone.auth.Auth()` into Mosaics.
 - Fixed a bug when calling `.pick_bands` on a simple operation containing `dc.paramters`.
 
 ### Changed
