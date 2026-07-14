@@ -2,7 +2,7 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## v2.4.3 - 07/14/2026
 
 ### Fixed
 
@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - The OpenStreetMap attribution link now opens in a new tab.
 - Optimize `matplotlib` import in `interactive/layers.py` to avoid unnecessarily importing `pyplot`.
+- Return error messages in response headers as well as in the tiles themselves.
 
 ## v2.4.2 - 03/23/2026
 
