@@ -32,6 +32,7 @@ from .operations import (
     _fill_mask,
     _index,
     _length,
+    _mask_by_vector_op,
     _mask_op,
     encode_function,
     filter_by_id,
@@ -610,12 +611,41 @@ class ImageStack(
 
         Returns
         -------
-        masked: Mosaic
-            Masked mosaic.
+        masked: ImageStack
+            Masked ImageStack.
         """
 
         return ImageStack(
             _mask_op(self, mask),
+            bands=self.bands,
+            product_id=self.product_id,
+            auth=self._auth,
+        )
+
+    def mask_by_vector(
+        self, vector: Union[str, Dict], invert: bool = False
+    ) -> ImageStack:
+        """
+        Mask this ImageStack using a GeoJSON vector. This call does not
+        mutate `this`.
+
+        Parameters
+        ----------
+        vector: Union[str, Dict]
+            GeoJSON FeatureCollection, Feature, or geometry as a JSON
+            string or dict. Pixels intersecting the vector are masked
+            by default.
+        invert: bool, optional
+            If True, mask pixels outside the vector instead of inside.
+            Defaults to False.
+
+        Returns
+        -------
+        masked: ImageStack
+            Masked ImageStack.
+        """
+        return ImageStack(
+            _mask_by_vector_op(self, vector, invert=invert),
             bands=self.bands,
             product_id=self.product_id,
             auth=self._auth,

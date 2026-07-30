@@ -2,6 +2,12 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [semantic versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Added ability to mask `Mosaic` and `ImageStack` objects with a vector mask, using the `.mask_by_vector` operation.
+
 ## v2.4.3 - 07/14/2026
 
 ### Fixed

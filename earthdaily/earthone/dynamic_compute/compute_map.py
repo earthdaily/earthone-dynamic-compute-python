@@ -136,6 +136,10 @@ def mask(*args, **kwargs):
     return None
 
 
+def mask_by_vector(*args, **kwargs):
+    return None
+
+
 def functional(*args, **kwargs):
     return None
 
@@ -245,6 +249,7 @@ class ComputeMap(dict, ABC):
                     ("index", index),
                     ("length", length),
                     ("mask", mask),
+                    ("mask_by_vector", mask_by_vector),
                     ("functional", functional),
                     ("dot", dot),
                     ("filled", fill_mask),

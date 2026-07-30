@@ -437,6 +437,34 @@ def _mask_op(data, mask, **kwargs):
     )
 
 
+def _mask_by_vector_op(data, vector, invert: bool = False, **kwargs):
+    """Build a graft that masks ``data`` using a GeoJSON vector.
+
+    Parameters
+    ----------
+    data : graft-like
+        Raster data to mask.
+    vector : str or dict
+        GeoJSON FeatureCollection, Feature, or geometry (JSON string or dict).
+    invert : bool, optional
+        If True, mask pixels outside the vector instead of inside.
+
+    Returns
+    -------
+    dict
+        Graft encoding the vector mask operation.
+    """
+    if not isinstance(vector, str):
+        vector = json.dumps(vector)
+
+    return graft_client.apply_graft(
+        "mask_by_vector",
+        data,
+        vector,
+        invert=invert,
+    )
+
+
 def get_padding(graft):
     pads = []
     for i in list(graft.values()):

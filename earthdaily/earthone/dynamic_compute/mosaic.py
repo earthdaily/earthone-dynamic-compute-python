@@ -38,6 +38,7 @@ from .operations import (
     _band_op,
     _clip_data,
     _fill_mask,
+    _mask_by_vector_op,
     _mask_op,
     _resolution_graft_x,
     _resolution_graft_y,
@@ -503,6 +504,28 @@ class Mosaic(
             Masked mosaic.
         """
         return Mosaic(_mask_op(self, mask), auth=self._auth)
+
+    def mask_by_vector(self, vector: Union[str, Dict], invert: bool = False) -> Mosaic:
+        """
+        Mask this Mosaic using a GeoJSON vector. This call does not
+        mutate `this`.
+
+        Parameters
+        ----------
+        vector: Union[str, Dict]
+            GeoJSON FeatureCollection, Feature, or geometry as a JSON
+            string or dict. Pixels intersecting the vector are masked
+            by default.
+        invert: bool, optional
+            If True, mask pixels outside the vector instead of inside.
+            Defaults to False.
+
+        Returns
+        -------
+        masked: Mosaic
+            Masked mosaic.
+        """
+        return Mosaic(_mask_by_vector_op(self, vector, invert=invert), auth=self._auth)
 
     def concat_bands(self, other: Union[Mosaic, str, List[str]]) -> Mosaic:
         """
