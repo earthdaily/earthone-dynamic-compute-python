@@ -85,6 +85,8 @@ class Rasterization(
         colormap=None,
         checkerboard=True,
         log_level=logging.DEBUG,
+        min_zoom=None,
+        max_zoom=None,
         **kwargs,
     ):
         """
@@ -120,6 +122,10 @@ class Rasterization(
             Only listen for log records at or above this log level during tile
             computation. See https://docs.python.org/3/library/logging.html#logging-levels
              for valid log levels.
+        min_zoom: int, optional
+            Minimum zoom level at which this layer is displayed. Defaults to 5.
+        max_zoom: int, optional
+            Maximum zoom level at which this layer is displayed. Defaults to 18.
 
         Returns
         -------
@@ -129,6 +135,12 @@ class Rasterization(
             VectorRasterLayer,
         )
 
+        layer_kwargs = dict(kwargs)
+        if min_zoom is not None:
+            layer_kwargs["min_zoom"] = min_zoom
+        if max_zoom is not None:
+            layer_kwargs["max_zoom"] = max_zoom
+
         return VectorRasterLayer(
             self,
             name=name,
@@ -136,7 +148,7 @@ class Rasterization(
             colormap=colormap,
             checkerboard=checkerboard,
             log_level=log_level,
-            **kwargs,
+            **layer_kwargs,
         )
 
     @classmethod
@@ -258,6 +270,8 @@ class Rasterization(
         colormap: Optional[str] = None,
         scales: Optional[List[List]] = None,
         checkerboard=True,
+        min_zoom: Optional[int] = None,
+        max_zoom: Optional[int] = None,
         **parameter_overrides,
     ) -> ipyleaflet.leaflet.TileLayer:
         """
@@ -276,6 +290,12 @@ class Rasterization(
             as many sub-lists as bands in the mosaic
         classes: list, default None
             Whether or not there are classes in the layer, indicating it is classified
+        min_zoom: int, optional
+            Minimum zoom level at which this layer is displayed. Independent of the
+            map's zoom limits. Defaults to 5.
+        max_zoom: int, optional
+            Maximum zoom level at which this layer is displayed. Independent of the
+            map's zoom limits. Defaults to 18.
 
         Returns
         -------
@@ -297,6 +317,10 @@ class Rasterization(
                     layer.set_imagery(self, **parameter_overrides)
                     layer.set_scales(scales, new_colormap=colormap)
                     layer.checkerboard = checkerboard
+                    if min_zoom is not None:
+                        layer.min_zoom = min_zoom
+                    if max_zoom is not None:
+                        layer.max_zoom = max_zoom
                 return layer
         else:
             layer = self.tile_layer(
@@ -304,6 +328,8 @@ class Rasterization(
                 scales=scales,
                 colormap=colormap,
                 checkerboard=checkerboard,
+                min_zoom=min_zoom,
+                max_zoom=max_zoom,
                 **parameter_overrides,
             )
             map.add_layer(layer)

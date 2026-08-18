@@ -174,6 +174,8 @@ class Mosaic(
         val_range=None,
         alpha=None,
         log_level=logging.DEBUG,
+        min_zoom=None,
+        max_zoom=None,
         **parameter_overrides,
     ):
         """
@@ -211,6 +213,10 @@ class Mosaic(
             Only listen for log records at or above this log level during tile
             computation. See https://docs.python.org/3/library/logging.html#logging-levels
              for valid log levels.
+        min_zoom: int, optional
+            Minimum zoom level at which this layer is displayed. Defaults to 5.
+        max_zoom: int, optional
+            Maximum zoom level at which this layer is displayed. Defaults to 18.
         **parameter_overrides: JSON-serializable value, Proxytype, or ipywidgets.Widget
             Values---or ipywidgets---for any parameters that this `Mosaic` depends on.
 
@@ -243,6 +249,11 @@ class Mosaic(
 
         # we don't have a kwargs to hide this, so hide it in parameter_overrides
         auth = parameter_overrides.pop("auth", self._auth)
+        layer_kwargs = {}
+        if min_zoom is not None:
+            layer_kwargs["min_zoom"] = min_zoom
+        if max_zoom is not None:
+            layer_kwargs["max_zoom"] = max_zoom
         return DynamicComputeLayer(
             self,
             name=name,
@@ -255,6 +266,7 @@ class Mosaic(
             log_level=log_level,
             auth=auth,
             parameter_overrides=parameter_overrides,
+            **layer_kwargs,
         )
 
     @classmethod
@@ -624,6 +636,8 @@ class Mosaic(
         classes: Optional[List[Dict]] = None,
         val_range=False,
         alpha: Optional[str] = None,
+        min_zoom: Optional[int] = None,
+        max_zoom: Optional[int] = None,
         **parameter_overrides,
     ) -> ipyleaflet.leaflet.TileLayer:
         """
@@ -642,6 +656,12 @@ class Mosaic(
             as many sub-lists as bands in the mosaic
         classes: list, default None
             Whether or not there are classes in the layer, indicating it is classified
+        min_zoom: int, optional
+            Minimum zoom level at which this layer is displayed. Independent of the
+            map's zoom limits. Defaults to 5.
+        max_zoom: int, optional
+            Maximum zoom level at which this layer is displayed. Independent of the
+            map's zoom limits. Defaults to 18.
 
         Returns
         -------
@@ -666,6 +686,10 @@ class Mosaic(
                     layer.classes = classes
                     layer.val_range = val_range
                     layer.alpha = alpha
+                    if min_zoom is not None:
+                        layer.min_zoom = min_zoom
+                    if max_zoom is not None:
+                        layer.max_zoom = max_zoom
                 return layer
         else:
             layer = self.tile_layer(
@@ -676,6 +700,8 @@ class Mosaic(
                 classes=classes,
                 val_range=val_range,
                 alpha=alpha,
+                min_zoom=min_zoom,
+                max_zoom=max_zoom,
                 **parameter_overrides,
             )
             map.add_layer(layer)

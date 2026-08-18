@@ -340,6 +340,12 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
         Whether to display a checkerboarded background for missing or masked data.
     classes: list, default None
         Whether or not there are classes in the layer, indicating it is classified
+    min_zoom: int, default 5
+        Minimum map zoom level at which this layer is displayed (inclusive).
+        Independent of the map's own `min_zoom`; the layer is hidden below this level.
+    max_zoom: int, default 18
+        Maximum map zoom level at which this layer is displayed (inclusive).
+        Independent of the map's own `max_zoom`; the layer is hidden above this level.
     colormap: str, optional, default None
         Name of the colormap to use.
         If set, `imagery` must have 1 band.
@@ -398,7 +404,12 @@ class DynamicComputeLayer(ipyleaflet.TileLayer):
     """
 
     attribution = traitlets.Unicode("EarthDaily Analytics").tag(sync=True, o=True)
-    min_zoom = traitlets.Int(5).tag(sync=True, o=True)
+    min_zoom = traitlets.Int(
+        5, help="Minimum zoom level at which this layer is displayed"
+    ).tag(sync=True, o=True)
+    max_zoom = traitlets.Int(
+        18, help="Maximum zoom level at which this layer is displayed"
+    ).tag(sync=True, o=True)
     url = traitlets.Unicode(read_only=True).tag(sync=True)
     layer_id = traitlets.Unicode(read_only=True).tag(sync=True)
     clear_on_update = traitlets.Bool(default_value=True)
