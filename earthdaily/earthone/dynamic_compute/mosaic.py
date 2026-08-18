@@ -612,7 +612,7 @@ class Mosaic(
             raise NotImplementedError(
                 f"Reduction over {axis} not implemented for Mosaic"
             )
-        return reduction(self, reducer, axis)
+        return reduction(self, reducer, axis, auth=self._auth)
 
     def visualize(
         self,

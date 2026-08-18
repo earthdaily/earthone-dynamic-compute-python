@@ -711,7 +711,7 @@ class ImageStack(
         else:
             kwargs = {}
 
-        return reduction(self, reducer, axis, **kwargs)
+        return reduction(self, reducer, axis, auth=self._auth, **kwargs)
 
     def visualize(*args, **kwargs):
         raise NotImplementedError(
