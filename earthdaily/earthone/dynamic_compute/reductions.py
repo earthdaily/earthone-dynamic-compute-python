@@ -61,4 +61,6 @@ def reduction(
 
     return_type = _get_return_type(axis, obj_type_str)
 
-    return return_type(_reduction_op(reducer, axis, obj_type_str, obj, auth=auth))
+    return return_type(
+        _reduction_op(reducer, axis, obj_type_str, obj, auth=auth), auth=auth
+    )
