@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Added
 
 - Added ability to mask `Mosaic` and `ImageStack` objects with a vector mask, using the `.mask_by_vector` operation.
-- Propogate `auth` in reduction mix-ins to allow users to pass in custom auth and perform reductions.
+- Propogate `auth` in reduction mixins to allow users to pass in custom auth and perform reductions.
 - Added ability to set min/max zoom levels for individual layers, instead of just the map.
 
 ## v2.4.3 - 07/14/2026
