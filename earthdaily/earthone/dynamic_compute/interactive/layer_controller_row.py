@@ -468,7 +468,7 @@ def colorbar_png(colormap_name, figsize=(2.5, 0.5)):
     ax = fig.add_axes([0, 0, 1, 1])
 
     try:
-        cmap = matplotlib.cm.get_cmap(colormap_name)
+        cmap = matplotlib.colormaps.get_cmap(colormap_name)
     except ValueError:
         return None
 
