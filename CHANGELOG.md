@@ -4,11 +4,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## v2.5.0 - 10/13/2026
+
 ### Added
 
 - Added ability to mask `Mosaic` and `ImageStack` objects with a vector mask, using the `.mask_by_vector` operation.
 - Propogate `auth` in reduction mixins to allow users to pass in custom auth and perform reductions.
 - Added ability to set min/max zoom levels for individual layers, instead of just the map.
+
+### Fixed
+
+- Replaced deprecated `matplotlib.cm.get_cmap` method with `matplotlib.colormaps.get_cmap`.
 
 ## v2.4.3 - 07/14/2026
 
