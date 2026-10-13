@@ -463,7 +463,7 @@ class Mosaic(
                 f"selected bands {bands} are not a subset of the mosaic bands {original_bands}"
             )
 
-        return Mosaic.from_product_bands(product_id, bands, **options)
+        return Mosaic.from_product_bands(product_id, bands, auth=self._auth, **options)
 
     def rename_bands(self, bands):
         """Rename the bands of an array."""
@@ -941,21 +941,23 @@ class Mosaic(
             )
 
     @classmethod
-    def deserialize(cls, data: str) -> Mosaic:
+    def deserialize(cls, data: str, auth: Optional[eo.auth.auth.Auth] = None) -> Mosaic:
         """Deserializes into this object from json
 
         Parameters
         ----------
         data : str
             The json representation of the object state
-
+        auth: Optional[eo.auth.auth.Auth]
+            Auth object to use for the deserialized. When omitted,
+            will use ``Auth.get_default_auth()``
         Returns
         -------
         Mosaic
             An instance of this object with the state stored in data
         """
 
-        return cls(**MosaicSerializationModel.from_json(data).dict())
+        return cls(**MosaicSerializationModel.from_json(data).dict(), auth=auth)
 
 
 # Support for legacy front-ends
