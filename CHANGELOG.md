@@ -10,7 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Added ability to mask `Mosaic` and `ImageStack` objects with a vector mask, using the `.mask_by_vector` operation.
 - Propogate `auth` in reduction mixins to allow users to pass in custom auth and perform reductions.
+- Propogate `auth` in `Mosaic.from_product_bands`.
+- Add optional `auth` parameter to `Mosaic.deserialize`.
 - Added ability to set min/max zoom levels for individual layers, instead of just the map.
+- Update dependencies for Python 3.14 support.
 
 ### Fixed
 
