@@ -4,6 +4,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+## v2.5.1 - 10/19/2026
+
+### Added
+
+- Add support for Python 3.14.
+
 ## v2.5.0 - 10/13/2026
 
 ### Added
