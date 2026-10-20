@@ -7,6 +7,7 @@ import logging
 from copy import deepcopy
 from typing import Dict, List, Optional, Union
 
+import earthdaily.earthone as eo
 import ipyleaflet
 
 from .compute_map import ComputeMap
@@ -57,6 +58,7 @@ class Rasterization(
         graft: Dict,
         columns: Optional[Union[str, List[str]]] = None,
         product_id: Optional[str] = None,
+        auth: Optional[eo.auth.auth.Auth] = None,
     ):
         """
         Initialize a new instance of Rasterization. Users should rely on
@@ -71,10 +73,13 @@ class Rasterization(
             of column names
         product_id: str
             Product id
+        auth: Optional[Auth]
+            Authentication used for this object and passed on to derived objects.
+            If not provided, the default auth is used.
         """
 
-        set_cache_id(graft)
-        super().__init__(graft)
+        set_cache_id(graft, auth=auth)
+        super().__init__(graft, auth=auth)
         self.columns = columns
         self.product_id = product_id
 
@@ -210,7 +215,12 @@ class Rasterization(
             methodparams["nclosest"] = nclosest
         columns = format_bands(columns)
 
+        auth = kwargs.pop("auth", None)
         vector_client = kwargs.pop("vector_client", None)
+        if auth is not None and vector_client is None:
+            vector_client = eo.vector.VectorClient(auth=auth)
+        elif auth is None and vector_client is not None:
+            auth = vector_client.auth
         verify_vector_product(product_id, columns, vector_client=vector_client)
 
         columns = " ".join(columns)
@@ -219,7 +229,7 @@ class Rasterization(
             product_id, columns, method, **methodparams, **kwargs
         )
 
-        return cls(graft, columns, product_id)
+        return cls(graft, columns, product_id, auth=auth)
 
     def pick_columns(self, columns: Union[str, List[str]]) -> Rasterization:
         """
@@ -260,7 +270,7 @@ class Rasterization(
             )
 
         return Rasterization.from_product_columns(
-            product_id, columns, method, **options
+            product_id, columns, method, auth=self._auth, **options
         )
 
     def visualize(

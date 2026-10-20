@@ -128,6 +128,7 @@ def dot(
         a_type = type_pair[0].__name__
         b_type = type_pair[1].__name__
 
-        return _return_type(a, b)(_dot_op(a, b, a_type, b_type))
+        auth = getattr(a, "_auth", None) or getattr(b, "_auth", None)
+        return _return_type(a, b)(_dot_op(a, b, a_type, b_type), auth=auth)
 
     raise NotImplementedError(f"dot not implemented for {type(a)}, {type(b)}")

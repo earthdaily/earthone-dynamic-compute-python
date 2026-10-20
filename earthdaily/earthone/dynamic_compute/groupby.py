@@ -4,8 +4,9 @@ import dataclasses
 from collections import namedtuple
 from collections.abc import Generator
 from copy import deepcopy
-from typing import Any, Callable, Hashable, Union
+from typing import Any, Callable, Hashable, Optional, Union
 
+import earthdaily.earthone as eo
 from earthdaily.earthone.geo import AOI
 from tqdm import tqdm
 
@@ -134,9 +135,14 @@ class ImageStackGroupBy(ComputeMap):
 
     """
 
-    def __init__(self, image_stack: ImageStack, groups_graft: dict):
-        set_cache_id(groups_graft)
-        super().__init__(groups_graft)
+    def __init__(
+        self,
+        image_stack: ImageStack,
+        groups_graft: dict,
+        auth: Optional[eo.auth.auth.Auth] = None,
+    ):
+        set_cache_id(groups_graft, auth=auth)
+        super().__init__(groups_graft, auth=auth)
         self.image_stack = image_stack
         self.groups_graft = groups_graft
         self.groups = ImageStackGroups(image_stack, groups_graft)
@@ -264,7 +270,9 @@ class ImageStackGroupBy(ComputeMap):
         elif isinstance(function, Callable):
             function = encode_function(function)
 
-        new_imagestackgroupby = ImageStackGroupBy(self.image_stack, self.groups_graft)
+        new_imagestackgroupby = ImageStackGroupBy(
+            self.image_stack, self.groups_graft, auth=self._auth
+        )
         groups = deepcopy(self.groups)
         groups.reducer = ImageStackReducer(function, axis)
 
@@ -343,7 +351,7 @@ def image_stack_groupby(
     encoded_grouping_func = encode_function(grouping_func)
     groups = groupby(dict(image_stack), encoded_grouping_func)
 
-    return ImageStackGroupBy(image_stack, groups)
+    return ImageStackGroupBy(image_stack, groups, auth=image_stack._auth)
 
 
 ImageStack.groupby = image_stack_groupby

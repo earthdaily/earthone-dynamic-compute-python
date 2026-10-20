@@ -518,7 +518,7 @@ class SubMixin:
 
         return_type = type_max(type(self), type(other))
         return return_type(
-            _math_op(self, "rsub", as_compute_map(other), auth=self._auth)
+            _math_op(self, "rsub", as_compute_map(other)), auth=self._auth
         )
 
 
@@ -824,7 +824,7 @@ def _functional_op(f):
         if issubclass(type(arg), Number):
             return f(arg)
 
-        return type(arg)(_func_op(arg, f))
+        return type(arg)(_func_op(arg, f), auth=getattr(arg, "_auth", None))
 
     return op
 
