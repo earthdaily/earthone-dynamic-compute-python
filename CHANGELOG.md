@@ -4,6 +4,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Unreleased
 
+### Fixed
+
+- Propagate the optional `auth` parameter through `GroupBy`, `rasterization`, `compute_map`, and `dot` operations.
+
 ## v2.5.1 - 10/19/2026
 
 ### Added
