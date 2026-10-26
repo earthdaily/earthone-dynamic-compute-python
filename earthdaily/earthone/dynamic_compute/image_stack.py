@@ -55,7 +55,9 @@ AXIS_NAME_TO_INDEX_MAP = {"images": (0,), "bands": (1,), "pixels": (2, 3)}
 
 
 def _optimize_image_stack_graft(
-    graft: dict, bands: Union[str, List[str]]
+    graft: dict,
+    bands: Union[str, List[str]],
+    auth: Optional[eo.auth.auth.Auth] = None,
 ) -> Optional[ImageStack]:
     """
     Given a graft for an image stack, determine if there is a more efficient ImageStack
@@ -77,6 +79,8 @@ def _optimize_image_stack_graft(
         Graft for an ImageStack.
     bands: List[str]
         List of bands that we actually use.
+    auth: Optional[eo.auth.auth.Auth]
+        Auth object to use for the new ImageStack
 
     Returns
     -------
@@ -154,16 +158,20 @@ def _optimize_image_stack_graft(
         )
 
     bands = " ".join(bands)
+    if auth is None:
+        auth = options.pop("auth", None)
+    else:
+        options.pop("auth", None)
 
     # Create a new ImageStack with the relevant bands.
     image_stack_graft = dict(
-        ImageStack.from_product_bands(product_id, bands, **options)
+        ImageStack.from_product_bands(product_id, bands, auth=auth, **options)
     )
 
     for filter_function in filter_functions[::-1]:
         image_stack_graft = filter_data(image_stack_graft, filter_function)
 
-    return ImageStack(image_stack_graft, bands=bands, **options)
+    return ImageStack(image_stack_graft, bands=bands, auth=auth, **options)
 
 
 @dataclasses.dataclass
@@ -493,7 +501,9 @@ class ImageStack(
         bands = format_bands(bands)
 
         # See if there is an efficient way to do this.
-        new_image_stack = _optimize_image_stack_graft(dict(self), bands)
+        new_image_stack = _optimize_image_stack_graft(
+            dict(self), bands, auth=self._auth
+        )
         if new_image_stack:
             return new_image_stack
 
@@ -731,20 +741,25 @@ class ImageStack(
         ).json()
 
     @classmethod
-    def deserialize(cls, data: str) -> ImageStack:
+    def deserialize(
+        cls, data: str, auth: Optional[eo.auth.auth.Auth] = None
+    ) -> ImageStack:
         """Deserializes into this object from json
 
         Parameters
         ----------
         data : str
             The json representation of the object state
+        auth: Optional[eo.auth.auth.Auth]
+            Auth object to use for the deserialized. When omitted,
+            will use ``Auth.get_default_auth()``
 
         Returns
         -------
         ImageStack
             An instance of this object with the state stored in data
         """
-        return cls(**ImageStackSerializationModel.from_json(data).dict())
+        return cls(**ImageStackSerializationModel.from_json(data).dict(), auth=auth)
 
 
 # Support for legacy front-ends

@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - Propagate the optional `auth` parameter through `GroupBy`, `rasterization`, `compute_map`, and `dot` operations.
+- Support `auth` on `ImageStack.deserialize`
 
 ## v2.5.1 - 10/19/2026
 
